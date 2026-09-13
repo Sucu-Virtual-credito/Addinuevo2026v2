@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // =========================================================
+    //  REGLAS DE SEGURIDAD (para pegar en Firestore → Rules)
+    //  👉 CAMBIA el token 'CAMBIA-ESTE-TOKEN' por uno tuyo y
+    //     pon el MISMO valor en dashboard.html (ADMIN_TOKEN).
+    //  Requisito: tener habilitado Authentication → Anónimo.
+    // =========================================================
+    function esAdmin() {
+      return request.resource.data.adminToken == 'CAMBIA-ESTE-TOKEN';
+    }
+    match /solicitudes/{sid} {
+      // cliente anónimo y asesor pueden leer
+      allow read: if request.auth != null;
+      // cualquier usuario autenticado crea su solicitud
+      allow create: if request.auth != null;
+      // dueño actualiza su propia solicitud, o asesor con token aprueba
+      allow update: if request.auth.uid == resource.data.uid || esAdmin();
+      // nadie borra
+      allow delete: if false;
+    }
+  }
+}

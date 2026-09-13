@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/notificar.js": { "runtime": "nodejs20.x" },
+    "api/login.js": { "runtime": "nodejs20.x" }
+  }
+}
