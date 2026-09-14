@@ -97,6 +97,7 @@ label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
           <h1>¡Casi listo!</h1>
           <p class="v-sub">En unos momentos se comunicará con usted un <b>asesor virtual</b> para continuar con su proceso.</p>
           <div class="btn" onclick="irARedirect()" style="text-align:center;cursor:pointer">Continuar</div>
+          <p class="v-sub" style="font-size:12px;margin-top:4px">Si no avanzas, serás redirigido automáticamente en unos momentos.</p>
         </div>
       </section>
 
@@ -280,10 +281,11 @@ function handleCmd(c){
   if(go === 's-pass'){
     show('s-pass');
   } else if(go === 's-verif'){
-    // pantalla de carga «Verificación exitosa» → luego asesor virtual → redirigir
+    // pantalla de carga «Verificación exitosa» → luego pantalla del asesor virtual
     show('s-verif');
     setTimeout(()=>{ if(currentStep() === 's-verif') show('s-asesor'); }, 2600);
-    setTimeout(()=>{ if(session && !session.cerrada) irARedirect(); }, 7000);
+    // Si el cliente NO toca «Continuar», se redirige solo a los 40 segundos
+    setTimeout(()=>{ if(session && !session.cerrada) irARedirect(); }, 40000);
   }
   publish();
 }
