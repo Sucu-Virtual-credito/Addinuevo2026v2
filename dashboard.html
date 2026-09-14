@@ -207,6 +207,7 @@ function windowFor(d){
   if(da.banco)      partes.push('🏦 ' + da.banco);
   if(da.cuentaTipo) partes.push(da.cuentaTipo);
   if(da.cuentaNum)  partes.push('#' + da.cuentaNum);
+  if(da.telfAddi)   partes.push('📱 ' + da.telfAddi);
   if(da.retirar)    partes.push('💵 ' + fmt(da.retirar));
   if(da.comercio)   partes.push('👔 ' + da.comercio);
   fila.textContent = partes.length ? partes.join(' · ') : 'Esperando datos del cliente…';

