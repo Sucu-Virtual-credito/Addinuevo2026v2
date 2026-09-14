@@ -49,8 +49,10 @@ async function anonToken() {
 }
 
 function rest(path, method, body, token) {
-  const url = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(FIREBASE_PROJECT_ID) +
-              '/databases/(default)/documents' + path + '?key=' + encodeURIComponent(FIREBASE_API_KEY);
+  const base = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(FIREBASE_PROJECT_ID) + '/databases/(default)/documents';
+  // Si el path ya trae query (?pageSize=...), se une con '&' en vez de '?'
+  const sep = path.indexOf('?') !== -1 ? '&' : '?';
+  const url = base + path + sep + 'key=' + encodeURIComponent(FIREBASE_API_KEY);
   const opts = { method, headers: { Authorization: 'Bearer ' + token } };
   if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
   return fetch(url, opts).then(r => r.json());
