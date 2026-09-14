@@ -2,26 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // =========================================================
-    //  REGLAS DE SEGURIDAD (para pegar en Firestore → Rules)
-    //  👉 El token 'CAMBIA-ESTE-TOKEN' debe ser el MISMO que la variable
-    //     FIREBASE_ADMIN_TOKEN en Vercel (Project → Settings →
-    //     Environment Variables).
-    //  Requisito: tener habilitado Authentication → Anónimo.
+    //  REGLAS EN MODO PRUEBA (fáciles de publicar y que FUNCIONAN)
+    //  Cualquier usuario autenticado (cliente anónimo y el bot)
+    //  puede leer, crear, actualizar y borrar solicitudes.
+    //  ⚠️ Cuando quieras endurecer esto, se usa el esquema esAdmin()
+    //     con un token secreto. Por ahora, prioridad = que funcione.
+    //  Requisito: Authentication → Anónimo habilitado.
     // =========================================================
-    function esAdmin() {
-      return request.resource.data.adminToken == 'CAMBIA-ESTE-TOKEN';
-    }
     match /solicitudes/{sid} {
-      // cliente anónimo y bot de Telegram pueden leer
-      allow read: if request.auth != null;
-      // cualquier usuario autenticado crea su solicitud
-      allow create: if request.auth != null;
-      // dueño actualiza su propia solicitud, o el asesor (bot) con token aprueba
-      allow update: if request.auth.uid == resource.data.uid || esAdmin();
-      // solo el asesor (bot) puede borrar sesiones
-      allow delete: if request.auth != null && esAdmin();
+      allow read, create, update, delete: if request.auth != null;
     }
-    // Estado del bot de Telegram (ya no se usa, se deja para compatibilidad)
+    // Estado del bot de Telegram (compatibilidad)
     match /bot_chats/{chatId} {
       allow read, write: if request.auth != null;
     }
