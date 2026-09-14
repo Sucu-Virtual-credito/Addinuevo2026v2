@@ -31,6 +31,7 @@ Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 | `index.html` | Checkout del cliente (los 2 pasos + carga + asesor virtual + redirección) |
 | `api/notificar.js` | Reenvía al bot de Telegram los mensajes con botones |
 | `api/bot.js` | Webhook del bot: recibe tus botones y escribe el `comando` en Firestore |
+| `api/config.js` | Entrega al navegador la config de Firebase **leyendo las variables de Vercel** (nada va en el código) |
 | `firestore.rules.json` | Reglas de seguridad (pegarlas en la consola) |
 | `GUIA-CONFIGURACION.txt` | 📖 **Guía paso a paso para configurar Firebase + Telegram + Vercel** |
 | `.env.example` | Plantilla de variables de entorno |
@@ -40,7 +41,7 @@ Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 
 1. **Firebase**: crea el proyecto, activa Firestore y **Authentication → Anónimo**.
 2. **Reglas**: pega `firestore.rules.json` en Firestore → Rules y cambia `CAMBIA-ESTE-TOKEN` por tu token.
-3. **Configuración**: cambia los 6 datos de `FIREBASE_CONFIG` en `index.html` y el `ADMIN_TOKEN`.
+3. **Configuración (segura)**: define las variables `FIREBASE_*` en Vercel (ver `.env.example`). La página las pide a `/api/config` al cargar — **no se escriben en el código**.
 4. **Bot**: crea el bot con @BotFather → token → envíale un mensaje → saca tu `chat id` de `getUpdates`.
 5. **Vercel**: sube el proyecto y define las variables de entorno (ver `.env.example`).
 6. **Webhook** (una vez): `https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot`
@@ -56,8 +57,10 @@ Abre `http://localhost:3000` para el flujo del cliente. Para probar los botones 
 
 ## 🔒 Seguridad
 
-- `TELEGRAM_BOT_TOKEN`, `ADMIN_CHAT_ID` y `FIREBASE_ADMIN_TOKEN` viven solo en **variables de entorno de Vercel** (nunca en el repo).
-- El token de asesor debe ser el mismo en: `firestore.rules.json`, `index.html → ADMIN_TOKEN` y Vercel.
+- `TELEGRAM_BOT_TOKEN`, `ADMIN_CHAT_ID` y TODAS las `FIREBASE_*` viven **solo en las variables de entorno de Vercel** (nunca en el código ni en el repo).
+- La página pide la configuración de Firebase a **`/api/config`**, que la lee de Vercel.
+- El token de asesor debe ser el mismo en: `firestore.rules.json` → `adminToken` y la variable `FIREBASE_ADMIN_TOKEN`.
+- Nota honesta: la `apiKey` web de Firebase es pública por diseño (la necesita el navegador). Lo que NO se filtra son los **secretos reales** (`TELEGRAM_BOT_TOKEN`, `FIREBASE_ADMIN_TOKEN`) y la seguridad de la base se apoya en las **reglas de Firestore**.
 
 ## ⚠️ Nota producción real
 
