@@ -3,10 +3,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // =========================================================
     //  REGLAS DE SEGURIDAD (para pegar en Firestore → Rules)
-    //  👉 CAMBIA el token 'CAMBIA-ESTE-TOKEN' por uno tuyo y
-    //     pon el MISMO valor en:
-    //       - index.html → ADMIN_TOKEN
-    //       - Vercel → Environment Variables → FIREBASE_ADMIN_TOKEN
+    //  👉 El token 'CAMBIA-ESTE-TOKEN' debe ser el MISMO que la variable
+    //     FIREBASE_ADMIN_TOKEN en Vercel (Project → Settings →
+    //     Environment Variables).
     //  Requisito: tener habilitado Authentication → Anónimo.
     // =========================================================
     function esAdmin() {
@@ -22,7 +21,7 @@ service cloud.firestore {
       // solo el asesor (bot) puede borrar sesiones
       allow delete: if request.auth != null && esAdmin();
     }
-    // Estado del bot de Telegram: qué dato espera del asesor (monto/comercio/teléfono)
+    // Estado del bot de Telegram (ya no se usa, se deja para compatibilidad)
     match /bot_chats/{chatId} {
       allow read, write: if request.auth != null;
     }
