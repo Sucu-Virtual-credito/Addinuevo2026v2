@@ -173,6 +173,7 @@ function botonesTelegram(){
     b.push([{ text: '✗ Contraseña incorrecta', callback_data: 'badpass|' + sid }]);
   }
   b.push([{ text: '🗑 Borrar sesión', callback_data: 'del|' + sid }]);
+  b.push([{ text: '🧹 Borrar TODAS las sesiones', callback_data: 'delall|#' }]);
   return b;
 }
 
