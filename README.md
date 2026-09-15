@@ -44,7 +44,9 @@ Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 3. **Configuración (segura)**: define las variables `FIREBASE_*` en Vercel (ver `.env.example`). La página las pide a `/api/config` al cargar — **no se escriben en el código**.
 4. **Bot**: crea el bot con @BotFather → token → envíale un mensaje → saca tu `chat id` de `getUpdates`.
 5. **Vercel**: sube el proyecto y define las variables de entorno (ver `.env.example`).
-6. **Webhook** (una vez): `https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot`
+6. **Webhook** (una vez por *token + dominio*): `https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot`
+   - No hace falta repetirlo al redesplegar en el **mismo** dominio.
+   - Sí hay que repetirlo si cambias de **dominio/proyecto** o creas **otro bot** (otro token).
 
 Detalles completos en **`GUIA-CONFIGURACION.txt`**.
 

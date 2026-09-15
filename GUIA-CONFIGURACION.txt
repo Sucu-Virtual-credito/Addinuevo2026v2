@@ -137,12 +137,25 @@ Tienes que hacer 4 partes (en este orden):
 El bot necesita saber a qué página llamar cuando tocas un
 botón. Se hace UNA sola vez después del deploy:
 
+  ⚠️ ¿CADA VEZ TENGO QUE HACER ESTO?
+   El webhook empareja TU BOT (token) con TU DOMINIO. Por eso:
+   - Mismo dominio + mismo bot: NO se repite. Redespliegas
+     las veces que quieras sobre addi-2026-nu.vercel.app y el
+     webhook sigue funcionando.
+   - Cambias de proyecto/dominio (otro x.vercel.app): SÍ hay
+     que volver a ejecutar con la URL nueva.
+   - Creas otro bot (token nuevo en BotFather): SÍ, se repite
+     con el token nuevo.
+   - Pruebas locales con ngrok: CADA vez que ngrok arranca te
+     da una URL distinta -> repite el setWebhook apuntando a
+     la URL de ngrok.
+
   Abre en el navegador:
 
   https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO.vercel.app/api/bot
 
   Ejemplo real:
-  https://api.telegram.org/bot123456789:AAHx.../setWebhook?url=https://addi-prod.vercel.app/api/bot
+  https://api.telegram.org/bot123456789:AAHx.../setWebhook?url=https://addi-2026-nu.vercel.app/api/bot
 
   ✓ Si responde:  {"ok":true}  → ya quedó conectado.
   ✗ Si responde {"ok":false} → revisa que el token sea correcto
