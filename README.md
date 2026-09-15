@@ -48,6 +48,46 @@ Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 
 Detalles completos en **`GUIA-CONFIGURACION.txt`**.
 
+## ⚠️ La web «se cae» cuando pones tu bot y tus datos — aquí está el porqué
+
+Por diseño, **ningún secreto viaja en el código ni en git**: la página pide la
+configuración a `/api/config` y el bot la lee de las variables de Vercel.
+Si al importar el repo en Vercel **omites un paso**, la app no muestra un error
+grande: se queda «esperando», los botones no responden y parece que se cayó.
+
+Los 4 casos reales que ves al poner tu bot y tus datos:
+
+1. **La página carga pero «Continuar» no hace nada y sale un aviso rojo con variables.**
+   → Pusiste el token/datos en un archivo `.env` local o dentro del código.
+   Vercel no los ve: el `.env` está excluido de git (`.gitignore`) y no se importa.
+   → Solución: crea las variables **solo en Vercel → Settings → Environment
+   Variables** y pulsa **Redeploy** (Deployments → Redeploy). Nada en el código.
+
+2. **El asesor toca ✓ en el bot y aparece «Error…» (o «Procesando…» y no pasa nada).**
+   → **Authentication → Anónimo** desactivado, o las **Reglas de Firestore** no
+   publicadas (o la base de datos no existe).
+   → Solución: Activa el login anónimo y publica `firestore.rules.json`
+   (Firestore → Rules → Publicar). El bot ahora **avisa con el error real** en
+   lugar de ignorarlo.
+
+3. **El bot no recibe nada del cliente.**
+   → Faltan `TELEGRAM_BOT_TOKEN` / `ADMIN_CHAT_ID` en Vercel, o guardaste las
+   variables pero **no redesplegaste** (el despliegue viejo sigue sin ellas).
+
+4. **Los botones de Telegram «no responden».**
+   → El **webhook** no está conectado, apunta a una URL vieja/borrada, o está en
+   conflicto con `getUpdates` (si abriste `.../getUpdates` para sacar tu chat id
+   y **lo dejaste abierto o en una app**, marca conflicto "409 Conflict").
+   → Solución: reconecta el webhook con
+   `https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot`
+   y luego verifícalo con `.../getWebhookInfo`.
+
+### 🧪 Diagnóstico automático (nuevo)
+Escribe `/probar` en el bot (o `/menu` → «🧪 Probar bot»). El bot responde ✅/❌
+con: variables de entorno, validez del token, webhook (último error de Telegram),
+login anónimo y si Firestore acepta escrituras. Con eso sabes exactamente cuál de
+los 4 casos es el tuyo.
+
 ## ▶️ Probar en local
 
 ```bash

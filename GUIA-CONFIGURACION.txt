@@ -119,6 +119,16 @@ Tienes que hacer 4 partes (en este orden):
   - Redespliega (Deployments → Redeploy) después de guardar
     las variables o los cambios no tomarán efecto.
 
+  ⚠️ IMPORTANTE (esto es lo que «cae» la web):
+   - Los datos van SOLO en Vercel. Un archivo .env local NO se
+     sube a git (esta excluido por .gitignore) y Vercel NUNCA lo
+     importa aunque el .env este en tu PC.
+   - NO pegues el token ni los datos dentro del codigo: la web y
+     el bot los leen de las variables de Vercel. Si ya los pegaste,
+     quitalos, revoca el bot en BotFather (/revoke) y crea otro.
+   - Pon las variables, guarda y pulsa Redeploy. Sin Redeploy el
+     despliegue viejo sigue corriendo SIN tus datos.
+
 
 =========================================================
  PARTE 4 — CONECTAR EL WEBHOOK (ÚLTIMO PASO)
@@ -184,5 +194,21 @@ botón. Se hace UNA sola vez después del deploy:
  4) Mensajes duplicados
     - Normal: cada cambio de espera genera un aviso; son 2-3
       mensajes por cliente (cédula, contraseña, listo).
+
+  5) Los botones del bot «no responden / se quedan en Procesando»
+    - Webhook incorrecto o viejo: abre
+        https://api.telegram.org/bot<TU_TOKEN>/getWebhookInfo
+      Tiene que decir tu URL actual (https://TU-DOMINIO/api/bot).
+      Si dice last_error_message o 409 Conflict, reconecta:
+        https://api.telegram.org/bot<TU_TOKEN>/setWebhook?url=https://TU-DOMINIO/api/bot
+    - El chat no es el ADMIN_CHAT_ID: comprueba que el número de
+      tu chat coincide con ADMIN_CHAT_ID en Vercel.
+
+  6) ¿DUDAS DE QUÉ FALLA?
+    - Escribe /probar en el bot (o /menu -> «🧪 Probar bot»).
+    - El bot te dirá con ✅/❌ qué variable falta, si el token es
+      válido, si el webhook está conectado (y su último error),
+      si el login anónimo funciona y si Firestore acepta escrituras.
+    - Arregla los ❌ y pulsa el botón de nuevo.
 
 --- FIN DE LA GUÍA ---

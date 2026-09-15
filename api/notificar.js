@@ -59,8 +59,12 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    res.status(r.status).send('');
+    const j = await r.json().catch(() => null);
+    res.status(r.status).json({
+      ok: !!(r.ok && j && j.ok),
+      error: (j && !j.ok) ? (j.description || 'Telegram rechazó el mensaje') : null
+    });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ ok: false, error: String(e) });
   }
 }

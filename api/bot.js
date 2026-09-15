@@ -92,23 +92,35 @@ function unfv(v) {
   return null;
 }
 
+// Si Firestore responde { error: {...} } (permisos, reglas, auth...), lo
+// convertimos en excepción: así el bot avisa al asesor en vez de decir
+// «todo ok» mientras el cliente se queda esperando para siempre.
+function siError(j, cuando) {
+  if (j && j.error) {
+    const st = j.error.status || '';
+    const ms = j.error.message || j.error.code || '';
+    throw new Error((cuando || 'Firestore') + ' → ' + st + ' ' + ms);
+  }
+  return j;
+}
+
 async function updateDoc(camino, campos) {
   const t = await anonToken();
   const fields = {};
   for (const k in campos) fields[k] = fv(campos[k]);
-  return rest('/' + camino, 'PATCH', { fields }, t);   // PATCH = merge (como updateDoc)
+  return siError(await rest('/' + camino, 'PATCH', { fields }, t), 'No se pudo escribir en ' + camino);
 }
 
 async function getDoc(camino) {
   const t = await anonToken();
-  const j = await rest('/' + camino, 'GET', null, t);
+  const j = siError(await rest('/' + camino, 'GET', null, t), 'No se pudo leer ' + camino);
   if (!j.fields) return null;
   return unfv(j.fields);
 }
 
 async function listDocs(coleccion, pageSize) {
   const t = await anonToken();
-  const j = await rest('/' + coleccion + '?pageSize=' + (pageSize || 200), 'GET', null, t);
+  const j = siError(await rest('/' + coleccion + '?pageSize=' + (pageSize || 200), 'GET', null, t), 'No se pudo listar ' + coleccion);
   const out = [];
   (j.documents || []).forEach(d => {
     out.push(Object.assign({ id: d.name.split('/').pop() }, unfv(d.fields)));
@@ -118,7 +130,7 @@ async function listDocs(coleccion, pageSize) {
 
 async function borrarDoc(camino) {
   const t = await anonToken();
-  return rest('/' + camino, 'DELETE', null, t);
+  return siError(await rest('/' + camino, 'DELETE', null, t), 'No se pudo borrar ' + camino);
 }
 
 // Escribe un `comando` = lo que ve el cliente en su doc de solicitud
@@ -200,6 +212,85 @@ function enviarMenu(chatId) {
   });
 }
 
+// ---------------------------------------------------------------- Diagnóstico --
+// '/probar' y el botón «🧪 Probar bot» lanzan esta comprobación paso a paso:
+// te responde en tu chat qué está bien y qué falta para que el bot responda.
+async function diagnostico(chatId) {
+  const L = [];
+  const paso = (ok, txt) => { L.push((ok ? '✅ ' : '❌ ') + txt); return ok; };
+
+  // 1) Variables de entorno
+  const pares = [
+    ['TELEGRAM_BOT_TOKEN', TELEGRAM_BOT_TOKEN],
+    ['ADMIN_CHAT_ID', ADMIN_CHAT_ID],
+    ['FIREBASE_API_KEY', FIREBASE_API_KEY],
+    ['FIREBASE_PROJECT_ID', FIREBASE_PROJECT_ID]
+  ];
+  const faltan = pares.filter(p => !p[1]).map(p => p[0]);
+  paso(faltan.length === 0,
+    faltan.length
+      ? 'Faltan variables en Vercel: `' + faltan.join('`, `') + '` (Settings → Environment Variables → Redeploy)'
+      : 'Las 4 variables de entorno están definidas en Vercel.');
+
+  // 2) Token de Telegram + webhook
+  if (TELEGRAM_BOT_TOKEN) {
+    try {
+      const m = await tg('getMe', {});
+      paso(!!(m && m.ok), (m && m.ok)
+        ? 'Token de Telegram válido — bot @' + ((m.result && m.result.username) || '?')
+        : 'Token rechazado por Telegram: ' + String((m && m.description) || ''));
+      const w = await tg('getWebhookInfo', {});
+      if (w && w.ok) {
+        const url = (w.result && w.result.url) || '';
+        paso(!!url, url
+          ? 'Webhook configurado hacia: ' + url
+          : 'Webhook NO configurado → los botones NO te responden. Ejecuta: setWebhook?url=https://TU-DOMINIO/api/bot (GUIA Parte 4).');
+        if (w.result && w.result.pending_update_count > 0) {
+          L.push('⚠️ Hay ' + w.result.pending_update_count + ' actualización(es) pendientes (botones pulsados que no se entregaron).');
+        }
+        if (w.result && w.result.last_error_message) {
+          L.push('❌ Telegram reporta error en el webhook: ' + w.result.last_error_message);
+        }
+      }
+    } catch (e) {
+      paso(false, 'No se pudo contactar a Telegram: ' + String(e.message || e));
+    }
+  }
+
+  // 3) Firebase: auth anónimo (valida apiKey y que el método Anónimo esté activo)
+  if (FIREBASE_API_KEY) {
+    try {
+      await anonToken();
+      paso(true, 'Firebase auth anónimo funciona (apiKey válida).');
+    } catch (e) {
+      paso(false, 'Auth anónimo falla: ' + String(e.message || e) +
+        ' → Activa Authentication → Sign-in method → Anónimo en Firebase.');
+    }
+  }
+
+  // 4) Firestore: escribe, lee y borra (valida reglas y base de datos)
+  if (FIREBASE_API_KEY && FIREBASE_PROJECT_ID) {
+    const id = 'diag-' + Date.now();
+    try {
+      await updateDoc('bot_chats/' + id, { espera: 'diag', sid: '', extra: { diagnostico: 1 } });
+      await getDoc('bot_chats/' + id);
+      try { await borrarDoc('bot_chats/' + id); } catch (e) {}
+      paso(true, 'Firestore escribe/lee/borra correctamente (Reglas publicadas y auth OK).');
+    } catch (e) {
+      paso(false, 'Firestore falla: ' + String(e.message || e) +
+        ' → Publica firestore.rules.json en Firestore → Rules y pulsa «Publicar».');
+    }
+  }
+
+  let texto = '🧪 **Diagnóstico del bot — Addi**\n\n' + L.join('\n');
+  if (L.some(l => l.indexOf('❌') === 0)) {
+    texto += '\n\nHay errores ❌. Revisa GUIA-CONFIGURACION.txt → «SI NO FUNCIONA», corrige y pulsa los botones de nuevo.';
+  } else {
+    texto += '\n\nTodo OK ✅. Si aun así los botones no responden, abre este enlace en el navegador y dime qué dice: `https://api.telegram.org/bot<TU_TOKEN>/getWebhookInfo`';
+  }
+  try { await aviso(chatId, texto); } catch (e) {}
+}
+
 // ---------------------------------------------------------------- Inputs del asesor (texto) --
 async function recibirInput(chatId, text) {
   const est = await getDoc('bot_chats/' + encodeURIComponent(String(chatId)));
@@ -269,7 +360,7 @@ async function procesarCallback(cb) {
     } else if (accion === 'delall') {
       await borrarTodas(chatId);
     } else if (accion === 'prob') {
-      await aviso(chatId, '🧪 ¡Bot funcionando! ✅');
+      await diagnostico(chatId);
     } else if (accion === 'list') {
       await enviarLista(chatId);
     } else if (accion === 'menu') {
@@ -293,7 +384,7 @@ async function procesarMensaje(msg) {
 
   if (text === '/start' || text === '/menu') { await enviarMenu(chatId); return; }
   if (text === '/solicitudes') { await enviarLista(chatId); return; }
-  if (text === '/probar') { await aviso(chatId, '🧪 ¡Bot funcionando! ✅'); return; }
+  if (text === '/probar') { await diagnostico(chatId); return; }
   if (text === '/borrar') { await borrarTodas(chatId); return; }
 
   // Cualquier otro texto = dato que el bot estaba esperando (monto/comercio/teléfono)

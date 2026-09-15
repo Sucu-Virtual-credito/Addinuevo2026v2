@@ -1,0 +1,10 @@
+{
+  "name": "addi-checkout",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Addi checkout: página estática (index.html) + funciones serverless (api/) para Vercel. No requiere build ni dependencias.",
+  "engines": {
+    "node": "20.x"
+  }
+}
