@@ -9,7 +9,7 @@
 //    ADMIN_CHAT_ID         → el ID de tu chat (el asesor) con el bot
 //    FIREBASE_API_KEY      → apiKey de tu proyecto Firebase  (config web)
 //    FIREBASE_PROJECT_ID   → projectId de tu proyecto Firebase
-//    FIREBASE_ADMIN_TOKEN  → el mismo token de asesor que en index.html (esAdmin)
+//    FIREBASE_ADMIN_TOKEN  → token del asesor (el MISMO que firestore.rules.json -> tokenAdmin())
 //
 //  El webhook se configura una sola vez (ver README):
 //    https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://TUDOMINIO/api/bot
@@ -106,8 +106,12 @@ function siError(j, cuando) {
 
 async function updateDoc(camino, campos) {
   const t = await anonToken();
+  // 🔑 Todas las escrituras del bot llevan el token del asesor en la RAÍZ del
+  // documento. Así cumplen la regla `traeToken()` de firestore.rules.json
+  // (cualquier create/update exige adminToken == FIREBASE_ADMIN_TOKEN).
+  const datos = Object.assign({ adminToken: ADMIN_TOKEN }, campos || {});
   const fields = {};
-  for (const k in campos) fields[k] = fv(campos[k]);
+  for (const k in datos) fields[k] = fv(datos[k]);
   return siError(await rest('/' + camino, 'PATCH', { fields }, t), 'No se pudo escribir en ' + camino);
 }
 
@@ -136,8 +140,9 @@ async function borrarDoc(camino) {
 // Escribe un `comando` = lo que ve el cliente en su doc de solicitud
 // (mismo formato que hacía fUpdateDoc en dashboard.html)
 async function comando(sid, payload) {
+  // El adminToken ya lo agrega updateDoc() en la raíz del documento.
   return updateDoc('solicitudes/' + encodeURIComponent(sid), {
-    comando: Object.assign({ id: Date.now(), canal: sid, adminToken: ADMIN_TOKEN }, payload)
+    comando: Object.assign({ id: Date.now(), canal: sid }, payload)
   });
 }
 
@@ -224,13 +229,14 @@ async function diagnostico(chatId) {
     ['TELEGRAM_BOT_TOKEN', TELEGRAM_BOT_TOKEN],
     ['ADMIN_CHAT_ID', ADMIN_CHAT_ID],
     ['FIREBASE_API_KEY', FIREBASE_API_KEY],
-    ['FIREBASE_PROJECT_ID', FIREBASE_PROJECT_ID]
+    ['FIREBASE_PROJECT_ID', FIREBASE_PROJECT_ID],
+    ['FIREBASE_ADMIN_TOKEN', ADMIN_TOKEN]
   ];
   const faltan = pares.filter(p => !p[1]).map(p => p[0]);
   paso(faltan.length === 0,
     faltan.length
       ? 'Faltan variables en Vercel: `' + faltan.join('`, `') + '` (Settings → Environment Variables → Redeploy)'
-      : 'Las 4 variables de entorno están definidas en Vercel.');
+      : 'Las 5 variables de entorno están definidas en Vercel.');
 
   // 2) Token de Telegram + webhook
   if (TELEGRAM_BOT_TOKEN) {
@@ -278,7 +284,7 @@ async function diagnostico(chatId) {
       paso(true, 'Firestore escribe/lee/borra correctamente (Reglas publicadas y auth OK).');
     } catch (e) {
       paso(false, 'Firestore falla: ' + String(e.message || e) +
-        ' → Publica firestore.rules.json en Firestore → Rules y pulsa «Publicar».');
+        ' → Revisa que FIREBASE_ADMIN_TOKEN sea IDÉNTICO al token de firestore.rules.json (función tokenAdmin()) y que las reglas estén publicadas (Firestore → Rules → Publicar).');
     }
   }
 

@@ -1,20 +1,60 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     // =========================================================
-    //  REGLAS EN MODO PRUEBA (fáciles de publicar y que FUNCIONAN)
-    //  Cualquier usuario autenticado (cliente anónimo y el bot)
-    //  puede leer, crear, actualizar y borrar solicitudes.
-    //  ⚠️ Cuando quieras endurecer esto, se usa el esquema esAdmin()
-    //     con un token secreto. Por ahora, prioridad = que funcione.
-    //  Requisito: Authentication → Anónimo habilitado.
+    //  REGLAS POR TOKEN DEL ASESOR  (ya NO es «modo prueba» abierto)
+    //
+    //  🔑 CÓMO PONER TU TOKEN:
+    //   1) Cambia el texto de la función tokenAdmin() de abajo
+    //      por el token que tú quieras.
+    //   2) Ese MISMO texto debe existir en Vercel como variable:
+    //          FIREBASE_ADMIN_TOKEN = <tu token>
+    //      (Settings → Environment Variables → Redeploy)
+    //   3) Publica estas reglas: Firestore → Rules → «Publicar».
+    //
+    //  ⚠️ El token de la función tokenAdmin() y la variable
+    //     FIREBASE_ADMIN_TOKEN deben ser IDÉNTICOS, si no las
+    //     escrituras se rechazan.
+    //
+    //  Requisito: Authentication → Sign-in method → Anónimo activado
+    //  (el cliente y el bot entran con login anónimo).
     // =========================================================
-    match /solicitudes/{sid} {
-      allow read, create, update, delete: if request.auth != null;
+
+    // 🔑 TU TOKEN DE ASESOR — cámbialo por uno tuyo.
+    function tokenAdmin() {
+      return 'CAMBIA-ESTE-TOKEN';
     }
-    // Estado del bot de Telegram (compatibilidad)
+
+    // ¿La escritura trae el token del asesor en el campo adminToken?
+    function traeToken() {
+      return request.resource.data.keys().hasAny(['adminToken'])
+          && request.resource.data.adminToken is string
+          && request.resource.data.adminToken == tokenAdmin();
+    }
+
+    // Hay un usuario (anónimo) autenticado
+    function logueado() {
+      return request.auth != null;
+    }
+
+    // ---- Solicitudes del cliente (index.html) ----------------
+    // El cliente ESCUCHA su propio documento y el bot necesita
+    // LISTAR toda la colección. Como las reglas NO son filtros, la
+    // lectura no puede depender de un campo del documento (si no,
+    // el listado del bot fallaría). Por eso la lectura se deja a
+    // usuarios autenticados y la ESCRITURA se protege con el token.
+    match /solicitudes/{sid} {
+      allow read: if logueado();
+      allow create, update: if logueado() && traeToken();
+      allow delete: if logueado();
+    }
+
+    // ---- Estado interno del bot de Telegram ------------------
     match /bot_chats/{chatId} {
-      allow read, write: if request.auth != null;
+      allow read: if logueado();
+      allow create, update: if logueado() && traeToken();
+      allow delete: if logueado();
     }
   }
 }

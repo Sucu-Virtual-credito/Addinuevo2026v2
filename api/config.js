@@ -21,8 +21,13 @@ export default function handler(req, res) {
   const appId = process.env.FIREBASE_APP_ID || '';
   const adminToken = process.env.FIREBASE_ADMIN_TOKEN || '';
 
-  // Sin estas dos la página no puede conectar con la base de datos
-  const obligatorias = { FIREBASE_API_KEY: apiKey, FIREBASE_PROJECT_ID: projectId };
+  // Sin estas variables la página no puede conectar con la base de datos ni
+  // escribir (las reglas de Firestore exigen el adminToken del asesor).
+  const obligatorias = {
+    FIREBASE_API_KEY: apiKey,
+    FIREBASE_PROJECT_ID: projectId,
+    FIREBASE_ADMIN_TOKEN: adminToken
+  };
   const missing = Object.keys(obligatorias).filter(k => !obligatorias[k]);
 
   res.json({

