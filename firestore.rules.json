@@ -22,8 +22,12 @@ service cloud.firestore {
     // =========================================================
 
     // 🔑 TU TOKEN DE ASESOR — cámbialo por uno tuyo.
+    //    ⚠️ Este archivo es PÚBLICO en GitHub: NO pongas aquí tu token real
+    //       de producción. Usa un texto de ejemplo y, al publicar en
+    //       Firebase → Firestore → Rules, sustituye solo el valor de la
+    //       función tokenAdmin() por tu token real (el que está en Vercel).
     function tokenAdmin() {
-      return 'CAMBIA-ESTE-TOKEN';
+      return 'CAMBIA-ESTE-TOKEN-POR-UNO-TUYO';
     }
 
     // ¿La escritura trae el token del asesor en el campo adminToken?
